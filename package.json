@@ -1,0 +1,23 @@
+{
+  "name": "deriv-intelligence",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.31.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "migrate": "pnpm --filter @deriv-intel/core migrate",
+    "seed": "pnpm --filter @deriv-intel/core seed",
+    "dev:worker": "pnpm --filter @deriv-intel/worker dev",
+    "dev:web": "pnpm --filter @deriv-intel/web dev",
+    "backfill": "pnpm --filter @deriv-intel/worker backfill",
+    "fetch": "pnpm --filter @deriv-intel/worker run fetch",
+    "report": "pnpm --filter @deriv-intel/worker report",
+    "eval": "pnpm --filter @deriv-intel/core eval",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck"
+  }
+}

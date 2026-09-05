@@ -1,0 +1,28 @@
+{
+  "name": "@deriv-intel/worker",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "backfill": "tsx src/cli.ts backfill",
+    "fetch": "tsx src/cli.ts fetch",
+    "anomaly": "tsx src/cli.ts anomaly",
+    "report": "tsx src/cli.ts report"
+  },
+  "dependencies": {
+    "@deriv-intel/connectors": "workspace:*",
+    "@deriv-intel/core": "workspace:*",
+    "@deriv-intel/llm": "workspace:*",
+    "bullmq": "^5.34.0",
+    "dotenv": "^16.4.5",
+    "ioredis": "^5.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}
