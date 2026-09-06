@@ -9,11 +9,15 @@ interface TavilyResult {
   published_date?: string | null;
 }
 
-function queries(): string[] {
+function envQueries(): string[] {
   return (process.env.TAVILY_QUERIES || "Deriv broker review")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
+}
+
+function queries(opts: FetchOptions): string[] {
+  return opts.queries?.length ? opts.queries : envQueries();
 }
 
 export async function fetchTavily(opts: FetchOptions): Promise<FetchResult> {
@@ -29,7 +33,7 @@ export async function fetchTavily(opts: FetchOptions): Promise<FetchResult> {
   const items: NormalizedItem[] = [];
   const seen = new Set<string>();
 
-  for (const q of queries()) {
+  for (const q of queries(opts)) {
     const res = await fetch("https://api.tavily.com/search", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

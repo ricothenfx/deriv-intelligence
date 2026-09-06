@@ -31,8 +31,8 @@ const SYSTEM_PROMPT = `You are a social-listening annotation engine for the trad
 Classify each social post, app review, or web article excerpt about trading/finance.
 Rules:
 - language: ISO 639-1 code of the dominant language (en, id, ms, vi, th, bn, ur, sw, fil, ru, pt, ar, ...).
-- mentions_brand: true only if the text is about the Deriv brand (deriv.app, Binary.com, Deriv Bot, DTrader, Deriv Go, Deriv CTOT count as true; math "derivatives" is false).
-- brands: every tracked trading brand this text is about, lowercase, from this list only: {tracked_brands}. Include "deriv" when mentions_brand is true. Empty array if none.
+- mentions_brand: true only if the text is explicitly about the Deriv brand — the text itself must name "Deriv" or a clear alias (deriv.app, deriv.com, Binary.com, Deriv Bot, DBot, DTrader, Deriv Go, Deriv cTrader, Deriv CTOT, Deriv MT5). Generic broker/trading content, math "derivatives", or content about another broker is false.
+- brands: every tracked trading brand this text is explicitly about, lowercase, from this list only: {tracked_brands}. Include "deriv" when mentions_brand is true. Empty array if none.
 - sentiment: overall sentiment toward the Deriv brand. Use "mixed" only when clearly both positive and negative.
 - aspects: distinct aspects mentioned, from this taxonomy: platform, app, withdrawal, deposit, kyc_verification, account, trading_experience, spreads_fees, support, security, regulation, bonuses, stability, payments, platform_performance. Each aspect carries its own sentiment.
 - topics: 1-3 short canonical topic tags in English, lowercase snake_case (e.g. withdrawal_delay, app_crash, kyc_pending, good_spreads, account_blocked, scam_accusation, customer_support, deposit_bonus).
@@ -45,7 +45,7 @@ Output format contract — every result object MUST have this exact shape:
 - "aspects" MUST be an array of {"name":"...","sentiment":"..."} objects, never an object map.
 - "brands" is a REQUIRED array of lowercase strings (may be empty).
 - "emotion" and "intensity" are optional; all other fields are required.
-- Each user item may carry "found_via_query": the search query that surfaced it. It is a WEAK hint only — if the text itself shows no sign of any tracked brand, keep mentions_brand=false and brands=[] even if the query mentions a brand. But if the text is clearly about trading and plausibly about the queried brand (e.g. a broker review/tutorial without naming it), prefer tagging that brand.`;
+- Each user item may carry "found_via_query": the search query that surfaced it. It is a WEAK hint only — NEVER infer a brand from the query itself. Tag a brand ONLY when the post text explicitly names that brand or one of its aliases. A broker review/tutorial/complaint that names no tracked brand (or names a different broker) must get mentions_brand=false and an empty brands array, even if the query mentioned a brand.`;
 
 export interface ClassifyInput {
   i: number;

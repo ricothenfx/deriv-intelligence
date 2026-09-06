@@ -1,6 +1,7 @@
 import type { Job } from "bullmq";
 import { CONNECTORS, type FetchOptions } from "@deriv-intel/connectors";
 import {
+  getKeywords,
   ingestItems,
   loadQueryState,
   saveQueryState,
@@ -11,8 +12,10 @@ import { getQueue, QUEUE_ENRICH, type FetchJobData } from "../queues";
 export async function processFetch(job: Job<FetchJobData>): Promise<{ fetched: number; inserted: number }> {
   const { source, window } = job.data;
   const state = await loadQueryState(source);
+  const queries = await getKeywords(source);
   const opts: FetchOptions = {
     cursor: (state?.cursor as Record<string, unknown>) ?? null,
+    ...(queries.length ? { queries } : {}),
     ...(window ? { window: { from: new Date(window.from), to: new Date(window.to) } } : {}),
   };
 

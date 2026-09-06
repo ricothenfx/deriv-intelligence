@@ -48,6 +48,7 @@ export interface MentionRow {
   topics: string[];
   country: string | null;
   stage: string | null;
+  language: string | null;
   published_at: string;
   engagement: number;
   score?: number;
@@ -127,6 +128,7 @@ export interface KolRow {
   countries: string[];
   topics: string[];
   score: number;
+  reach: number | null;
   last_active: string | null;
 }
 
@@ -209,6 +211,16 @@ export async function postJson<T>(url: string, body: unknown): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+export async function putJson<T>(url: string, body: unknown): Promise<T> {
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`${url} -> ${res.status}: ${await res.text()}`);
+  return res.json() as Promise<T>;
+}
+
 export interface SourceStatus {
   source: string;
   label: string;
@@ -234,6 +246,18 @@ export interface FetchJobStatus {
   fetched: number | null;
   inserted: number | null;
   error: string | null;
+}
+
+export interface KeywordSourceConfig {
+  source: string;
+  label: string;
+  queries: string[];
+  defaults: string[];
+  configured: boolean;
+}
+
+export interface KeywordsResponse {
+  sources: KeywordSourceConfig[];
 }
 
 export const fmtSigned = (n: number) => `${n >= 0 ? "+" : ""}${n.toFixed(2)}`;

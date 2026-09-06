@@ -7,25 +7,25 @@ export default function HelpPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold text-white">Panduan &amp; Glossary</h1>
+        <h1 className="text-xl font-semibold text-white">Guide &amp; Glossary</h1>
         <p className="mt-0.5 text-xs text-slate-500">
-          Penjelasan semua istilah dan metrik yang dipakai di dashboard ini. Tooltip (?) di setiap judul kartu/angka juga menampilkan penjelasan singkat.
+          Explanations of every term and metric used in this dashboard. The (?) tooltip on each card title or number shows the same short explanations.
         </p>
       </div>
 
-      <Card title="Cara kerja aplikasi ini (big picture)">
+      <Card title="How this app works (big picture)">
         <ol className="list-decimal space-y-2 pl-5 text-xs leading-relaxed text-slate-300">
           <li>
-            <span className="font-medium text-slate-100">Grab</span> — worker mengambil data mentah dari 4 channel: Reddit, YouTube, Google Play, dan web/news (Tavily), terjadwal otomatis (Reddit tiap 15 menit; YouTube &amp; Google Play tiap jam; web tiap 6 jam) atau manual lewat tombol “Grab now” di halaman Overview.
+            <span className="font-medium text-slate-100">Grab</span> — the worker collects raw data from 4 channels: Reddit, YouTube, Google Play, and web/news (Tavily), on an automatic schedule (Reddit every 15 minutes; YouTube &amp; Google Play hourly; web every 6 hours) or manually via the “Grab now” button on the Overview page. The keywords used per channel are editable on the Keywords page.
           </li>
           <li>
-            <span className="font-medium text-slate-100">Enrich</span> — setiap postingan dianalisis AI: sentimen, emosi, aspek keluhan, topik, tahap journey user, perkiraan negara, dan deteksi bot. {HELP.enrichment}
+            <span className="font-medium text-slate-100">Enrich</span> — every post is analyzed by AI: sentiment, emotion, complaint aspects, topics, user journey stage, estimated country, and bot detection. {HELP.enrichment}
           </li>
           <li>
-            <span className="font-medium text-slate-100">Analyze</span> — angka-angka di semua halaman adalah agregasi SQL dari data tersebut, selalu memakai bobot engagement dan mengeluarkan postingan bot. {HELP.bot_filter}
+            <span className="font-medium text-slate-100">Analyze</span> — the numbers on every page are SQL aggregations over that data, always engagement-weighted and with bot posts excluded. {HELP.bot_filter}
           </li>
           <li>
-            <span className="font-medium text-slate-100">Verifikasi</span> — hampir semua kutipan postingan punya tautan “buka sumber” yang membuka halaman aslinya di tab baru, sehingga Anda bisa memeriksa dan langsung membalas di platform sumbernya.
+            <span className="font-medium text-slate-100">Verify</span> — almost every post quote has an “open source” link that opens the original page in a new tab, so you can check it and reply directly on the source platform. Non-English posts offer a “Translate to English” button.
           </li>
         </ol>
       </Card>

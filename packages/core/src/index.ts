@@ -17,3 +17,5 @@ export * from "./versions";
 export * from "./replay";
 export * from "./insights";
 export * from "./copilot";
+export * from "./keywords";
+export * from "./translate";

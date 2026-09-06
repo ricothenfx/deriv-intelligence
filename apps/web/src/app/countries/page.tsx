@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Card, EmptyHint, InfoTip, Loading, SentimentPill, SourceLink, toneClass } from "@/components/ui";
+import { TranslateButton } from "@/components/translate";
 import { HourlyChart, TrendChart } from "@/components/charts";
 import { WorldMap } from "@/components/world-map";
 import { HELP } from "@/lib/help";
@@ -143,10 +144,15 @@ export default function CountriesPage() {
                       <SentimentPill sentiment={m.sentiment} />
                       <span className="text-slate-500">{m.stage ?? "-"} · {m.source} · {m.published_at}</span>
                       <span className="ml-auto">
-                        <SourceLink m={m} label="buka sumber" className="text-[10px]" />
+                        <SourceLink m={m} label="open source" className="text-[10px]" />
                       </span>
                     </div>
                     <p className="line-clamp-2 text-slate-300">{m.content}</p>
+                    {m.language && !m.language.toLowerCase().startsWith("en") && (
+                      <div className="mt-1">
+                        <TranslateButton itemId={m.id} language={m.language} />
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

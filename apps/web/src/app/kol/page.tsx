@@ -6,6 +6,13 @@ import { Card, EmptyHint, InfoTip, Loading, toneClass } from "@/components/ui";
 import { HELP } from "@/lib/help";
 import { getJson, type KolRow } from "@/lib/api";
 
+function fmtReach(n: number | null): string {
+  if (n == null) return "—";
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return String(n);
+}
+
 export default function KolPage() {
   const [days, setDays] = useState(30);
   const [authors, setAuthors] = useState<KolRow[] | null>(null);
@@ -27,7 +34,9 @@ export default function KolPage() {
         <div>
           <h1 className="text-xl font-semibold text-white">KOL Radar</h1>
           <p className="mt-0.5 text-xs text-slate-500">
-            Authors ranked by influence: posting frequency × engagement reach × negative impact. High-score negative authors are reputation risks; positive ones are advocacy candidates.
+            Authors ranked by influence about Deriv: engagement × posting frequency × negative impact, boosted by
+            channel reach (subscribers) when known. High-score negative authors are reputation risks; positive ones
+            are advocacy candidates.
           </p>
         </div>
         <select value={days} onChange={(e) => setDays(Number(e.target.value))} className="rounded-md border border-slate-800 bg-slate-900 px-2 py-1.5 text-xs text-slate-300">
@@ -46,7 +55,7 @@ export default function KolPage() {
       {authors && authors.length > 0 && (
         <Card title={`Top ${authors.length} authors`} hint={HELP.kol_score}>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[820px] text-xs">
+            <table className="w-full min-w-[900px] text-xs">
               <thead>
                 <tr className="text-left text-slate-500">
                   <th className="pb-2 font-medium">#</th>
@@ -56,6 +65,9 @@ export default function KolPage() {
                   <th className="pb-2 font-medium">Platform</th>
                   <th className="pb-2 font-medium">
                     Score <InfoTip text={HELP.kol_score} />
+                  </th>
+                  <th className="pb-2 font-medium">
+                    Reach <InfoTip text={HELP.kol_reach} />
                   </th>
                   <th className="pb-2 font-medium">Posts</th>
                   <th className="pb-2 font-medium">Engagement</th>
@@ -78,7 +90,7 @@ export default function KolPage() {
                           href={a.profile_url}
                           target="_blank"
                           rel="noreferrer"
-                          title={`Buka profil ${a.author} di tab baru`}
+                          title={`Open ${a.author}'s profile in a new tab`}
                           className="inline-flex items-center gap-1 text-sky-400 hover:text-sky-300 hover:underline"
                         >
                           {a.author}
@@ -92,10 +104,10 @@ export default function KolPage() {
                               href={a.example_url}
                               target="_blank"
                               rel="noreferrer"
-                              title="Buka contoh postingan terbaru author ini"
+                              title="Open this author's latest post in a new tab"
                               className="ml-1.5 inline-flex items-center gap-0.5 text-[10px] font-normal text-sky-400/80 hover:text-sky-300 hover:underline"
                             >
-                              postingan
+                              post
                               <ExternalLink size={9} className="shrink-0" />
                             </a>
                           )}
@@ -104,6 +116,7 @@ export default function KolPage() {
                     </td>
                     <td className="py-1.5 text-slate-400">{a.source}</td>
                     <td className="py-1.5 font-semibold text-sky-300">{a.score}</td>
+                    <td className="py-1.5 text-slate-300">{fmtReach(a.reach)}</td>
                     <td className="py-1.5 text-slate-300">{a.mentions}</td>
                     <td className="py-1.5 text-slate-300">{Math.round(a.total_engagement)}</td>
                     <td className={`py-1.5 ${toneClass(a.avg_sentiment)}`}>{a.avg_sentiment.toFixed(2)}</td>
@@ -119,10 +132,10 @@ export default function KolPage() {
                           href={a.example_url}
                           target="_blank"
                           rel="noreferrer"
-                          title="Buka postingan terbaru author ini di tab baru"
+                          title="Open this author's latest post in a new tab"
                           className="ml-1.5 inline-flex items-center gap-0.5 text-[10px] text-sky-400/80 hover:text-sky-300 hover:underline"
                         >
-                          postingan
+                          post
                           <ExternalLink size={9} className="shrink-0" />
                         </a>
                       )}

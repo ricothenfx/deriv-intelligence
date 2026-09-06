@@ -18,6 +18,7 @@ import {
   LineChart,
   HelpCircle,
   BookOpen,
+  KeyRound,
 } from "lucide-react";
 
 const items = [
@@ -33,9 +34,10 @@ const items = [
   { href: "/insights", label: "Insights", icon: LineChart },
   { href: "/faq", label: "Auto-FAQ", icon: HelpCircle },
   { href: "/search", label: "Search & Ask", icon: Search },
+  { href: "/keywords", label: "Keywords", icon: KeyRound },
   { href: "/reports", label: "Reports", icon: FileText },
   { href: "/costs", label: "LLM Costs", icon: Wallet },
-  { href: "/help", label: "Panduan", icon: BookOpen },
+  { href: "/help", label: "Guide", icon: BookOpen },
 ];
 
 export function Nav() {

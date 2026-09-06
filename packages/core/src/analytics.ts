@@ -305,6 +305,7 @@ export interface MentionRow {
   topics: string[];
   country: string | null;
   stage: string | null;
+  language: string | null;
   published_at: string;
   engagement: number;
 }
@@ -318,6 +319,7 @@ export async function topMentions(
   const rows = await query<Record<string, string>>(
     `select i.id, i.source, i.source_id, i.url, i.title, left(i.content, 400) as content, e.sentiment,
        e.sentiment_score, e.topics, e.location_country, e.journey_stage,
+       coalesce(e.language, i.language) as language,
        to_char(i.published_at, 'YYYY-MM-DD HH24:MI') as published_at,
        (${ENG_WEIGHT})::int as engagement
      from item_enrichments e join items i on i.id = e.item_id
@@ -338,6 +340,7 @@ export async function topMentions(
     topics: (r.topics as unknown as string[]) ?? [],
     country: r.location_country,
     stage: r.journey_stage,
+    language: r.language ?? null,
     published_at: r.published_at,
     engagement: Number(r.engagement),
   }));

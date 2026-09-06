@@ -29,10 +29,10 @@ export function SourceLink({
       href={href}
       target="_blank"
       rel="noreferrer"
-      title="Buka postingan asli di tab baru"
+      title="Open the original post in a new tab"
       className={`inline-flex items-center gap-1 text-sky-400 hover:text-sky-300 hover:underline ${className}`}
     >
-      {label ?? "sumber"}
+      {label ?? "source"}
       <ExternalLink size={11} className="shrink-0" />
     </a>
   );

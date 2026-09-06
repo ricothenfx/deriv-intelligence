@@ -17,6 +17,7 @@ function mapRow(r: Record<string, string>): SearchRow {
     topics: (r.topics as unknown as string[]) ?? [],
     country: r.location_country,
     stage: r.journey_stage,
+    language: r.language ?? null,
     published_at: r.published_at,
     engagement: Number(r.engagement),
     score: Number(r.score ?? 0),
@@ -25,6 +26,7 @@ function mapRow(r: Record<string, string>): SearchRow {
 
 const SELECT = `select i.id, i.source, i.source_id, i.url, i.title, left(i.content, 400) as content,
   e.sentiment, e.sentiment_score, e.topics, e.location_country, e.journey_stage,
+  coalesce(e.language, i.language) as language,
   to_char(i.published_at, 'YYYY-MM-DD HH24:MI') as published_at,
   (${ENG_WEIGHT})::int as engagement`;
 
@@ -53,10 +55,19 @@ export async function hybridSearch(q: string, filters: Filters = {}, limit = 30)
   }
 
   const extra: string[] = ["e.item_id is not null", "e.is_bot = false"];
+  const brand = (filters.brand || "deriv").trim().toLowerCase();
   const params: unknown[] = [trimmed];
+  if (brand === "*") {
+    extra.push("e.brands <> '{}'");
+  } else {
+    params.push(brand);
+    extra.push(`e.brands @> ARRAY[$${params.length}]::text[]`);
+  }
   if (vec) params.push(JSON.stringify(vec));
+  const vecParam = vec ? `$${params.length}::vector` : null;
   for (const [k, v] of Object.entries(filters)) {
     if (v == null || v === "") continue;
+    if (k === "brand") continue;
     params.push(v);
     const n = params.length;
     if (k === "country") extra.push(`e.location_country = $${n}`);
@@ -73,11 +84,11 @@ export async function hybridSearch(q: string, filters: Filters = {}, limit = 30)
     where to_tsvector('simple', coalesce(i.title, '') || ' ' || i.content) @@ websearch_to_tsquery('simple', $1)
     limit 100
   )`;
-  const semCte = vec
+  const semCte = vecParam
     ? `sem as (
-        select emb.item_id as id, row_number() over (order by emb.embedding <=> $2::vector) as rn
+        select emb.item_id as id, row_number() over (order by emb.embedding <=> ${vecParam}) as rn
         from item_embeddings emb
-        order by emb.embedding <=> $2::vector
+        order by emb.embedding <=> ${vecParam}
         limit 100
       )`
     : `sem as (select null::bigint as id, null::bigint as rn where false)`;

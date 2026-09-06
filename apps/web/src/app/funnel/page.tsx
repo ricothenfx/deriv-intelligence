@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card, EmptyHint, Loading, SentimentPill, SourceLink, toneClass } from "@/components/ui";
+import { TranslateButton } from "@/components/translate";
 import { HELP } from "@/lib/help";
 import { getJson, type AspectRow, type FunnelRow, type GroupStat, type MentionRow } from "@/lib/api";
 
@@ -145,10 +146,15 @@ export default function FunnelPage() {
                         {m.country ?? "?"} · {m.source} · {m.published_at}
                       </span>
                       <span className="ml-auto">
-                        <SourceLink m={m} label="buka sumber" className="text-[10px]" />
+                        <SourceLink m={m} label="open source" className="text-[10px]" />
                       </span>
                     </div>
                     <p className="line-clamp-2 text-slate-300">{m.content}</p>
+                    {m.language && !m.language.toLowerCase().startsWith("en") && (
+                      <div className="mt-1">
+                        <TranslateButton itemId={m.id} language={m.language} />
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

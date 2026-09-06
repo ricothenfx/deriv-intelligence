@@ -14,6 +14,7 @@ export async function GET(req: NextRequest) {
       country: sp.get("country"),
       source: sp.get("source"),
       sentiment: sp.get("sentiment"),
+      brand: sp.get("brand") ?? "deriv",
       from: new Date(Date.now() - days * 86400_000).toISOString(),
     },
     limit,

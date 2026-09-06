@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { Card, EmptyHint, InfoTip, Loading, SentimentPill, SourceLink, toneClass } from "@/components/ui";
+import { TranslateButton } from "@/components/translate";
 import { HELP } from "@/lib/help";
 import { getJson, postJson, type ChatLogEntry, type CopilotDraft, type GroupStat, type MentionRow } from "@/lib/api";
 
@@ -52,6 +53,7 @@ function SearchTab() {
   const [country, setCountry] = useState("");
   const [sentiment, setSentiment] = useState("");
   const [source, setSource] = useState("");
+  const [brand, setBrand] = useState("deriv");
   const [days, setDays] = useState(30);
   const [countries, setCountries] = useState<GroupStat[]>([]);
   const [results, setResults] = useState<MentionRow[] | null>(null);
@@ -73,6 +75,7 @@ function SearchTab() {
     if (country) params.set("country", country);
     if (sentiment) params.set("sentiment", sentiment);
     if (source) params.set("source", source);
+    if (brand) params.set("brand", brand);
     getJson<{ results: MentionRow[] }>(`/api/search?${params}`)
       .then((r) => setResults(r.results))
       .catch((err) => setError(String(err)))
@@ -107,6 +110,10 @@ function SearchTab() {
           <option value="youtube">youtube</option>
           <option value="gplay">gplay</option>
           <option value="tavily">tavily</option>
+        </select>
+        <select value={brand} onChange={(e) => setBrand(e.target.value)} className="rounded-md border border-slate-800 bg-slate-900 px-2 py-2 text-xs text-slate-300" title={HELP.search_brand}>
+          <option value="deriv">Deriv only</option>
+          <option value="*">All brands</option>
         </select>
         <select value={days} onChange={(e) => setDays(Number(e.target.value))} className="rounded-md border border-slate-800 bg-slate-900 px-2 py-2 text-xs text-slate-300">
           <option value={7}>7 days</option>
@@ -172,6 +179,7 @@ function MentionCard({ m }: { m: MentionRow }) {
         <SentimentPill sentiment={m.sentiment} />
         <span className="text-slate-500">
           {m.country ?? "?"} · {m.stage ?? "-"} · {m.source} · {m.published_at}
+          {m.language && !m.language.toLowerCase().startsWith("en") && ` · ${m.language}`}
         </span>
         {m.topics.slice(0, 3).map((t) => (
           <span key={t} className="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-sky-300">{t}</span>
@@ -182,8 +190,13 @@ function MentionCard({ m }: { m: MentionRow }) {
         </span>
       </div>
       <p className="line-clamp-3 text-slate-300">{m.content}</p>
+      {m.language && !m.language.toLowerCase().startsWith("en") && (
+        <div className="mt-1">
+          <TranslateButton itemId={m.id} language={m.language} />
+        </div>
+      )}
       <div className="mt-1.5 flex flex-wrap items-center gap-3">
-        <SourceLink m={m} label="buka sumber" className="text-[11px]" />
+        <SourceLink m={m} label="open source" className="text-[11px]" />
         <button onClick={draftReply} disabled={drafting || !!draft} className="text-[11px] text-sky-400 hover:underline disabled:opacity-50">
           {drafting ? "drafting…" : draft ? "draft ✓" : "✍ Draft reply"}
         </button>

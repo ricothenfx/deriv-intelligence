@@ -22,6 +22,7 @@ export interface FetchOptions {
   window?: FetchWindow;
   limit?: number;
   cursor?: Record<string, unknown> | null;
+  queries?: string[];
 }
 
 export interface FetchResult {

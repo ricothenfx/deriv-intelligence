@@ -10,11 +10,15 @@ function apiKey(): string {
   return k;
 }
 
-function queries(): string[] {
+function envQueries(): string[] {
   return (process.env.YOUTUBE_QUERIES || "Deriv broker review")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
+}
+
+function queries(opts: FetchOptions): string[] {
+  return opts.queries?.length ? opts.queries : envQueries();
 }
 
 function dailyQuota(): number {
@@ -47,7 +51,7 @@ export async function fetchYoutube(opts: FetchOptions): Promise<FetchResult> {
   const videoQuery = new Map<string, string>();
   const items: NormalizedItem[] = [];
 
-  for (const q of queries()) {
+  for (const q of queries(opts)) {
     if (quota.used + SEARCH_COST > budget) break;
     const json = await call<any>("search", {
       part: "snippet",
@@ -87,6 +91,23 @@ export async function fetchYoutube(opts: FetchOptions): Promise<FetchResult> {
     }
   }
 
+  const channelIds = [...new Set([...stats.values()].map((s) => s.channelId).filter((c): c is string => !!c))];
+  const channelSubs = new Map<string, number>();
+  for (let i = 0; i < channelIds.length; i += 50) {
+    const chunk = channelIds.slice(i, i + 50);
+    if (quota.used + LIST_COST > budget) break;
+    try {
+      const json = await call<any>("channels", { part: "statistics", id: chunk.join(",") });
+      quota.used += LIST_COST;
+      for (const ch of json.items ?? []) {
+        const subs = Number(ch?.statistics?.subscriberCount);
+        if (ch?.id && Number.isFinite(subs)) channelSubs.set(ch.id, subs);
+      }
+    } catch {
+      break;
+    }
+  }
+
   for (const id of videoIds) {
     const s = stats.get(id);
     if (!s) continue;
@@ -100,7 +121,13 @@ export async function fetchYoutube(opts: FetchOptions): Promise<FetchResult> {
       language: null,
       publishedAt: new Date(s.publishedAt ?? Date.now()),
       engagement: { viewCount: s.viewCount ?? 0, likeCount: s.likeCount ?? 0, comments: s.commentCount ?? 0 },
-      metadata: { kind: "video", videoId: id, channelId: s.channelId ?? null, query: videoQuery.get(id) ?? null },
+      metadata: {
+        kind: "video",
+        videoId: id,
+        channelId: s.channelId ?? null,
+        channelSubs: channelSubs.get(s.channelId ?? "") ?? null,
+        query: videoQuery.get(id) ?? null,
+      },
     });
   }
 
@@ -140,6 +167,6 @@ export async function fetchYoutube(opts: FetchOptions): Promise<FetchResult> {
   return {
     items,
     cursor: { quota, lastRun: new Date().toISOString() },
-    metrics: { quotaUsed: quota.used, videos: videoIds.length },
+    metrics: { quotaUsed: quota.used, videos: videoIds.length, channels: channelIds.length },
   };
 }

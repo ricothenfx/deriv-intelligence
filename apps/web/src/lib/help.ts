@@ -1,68 +1,75 @@
 export const HELP = {
   mentions:
-    "Jumlah total postingan/komentar/review tentang Deriv yang berhasil dikumpulkan dari semua channel (Reddit, YouTube, Google Play, web) dalam periode terpilih. Angka membandingkan dengan periode sebelumnya yang sama panjang.",
+    "Total posts/comments/reviews about Deriv collected from all channels (Reddit, YouTube, Google Play, web) in the selected period. The delta compares against the previous period of the same length.",
   weighted_sentiment:
-    "Rata-rata sentimen dari -1 (sangat negatif) sampai +1 (sangat positif), dibobot oleh engagement — postingan dengan banyak views/likes/komentar berpengaruh lebih besar daripada postingan sepi.",
+    "Average sentiment from -1 (very negative) to +1 (very positive), weighted by engagement — posts with many views/likes/comments carry more influence than quiet ones.",
   negative_share:
-    "Persentase mention yang diklasifikasi AI sebagai negatif. Rinciannya: jumlah negatif, positif, dan mixed (positif+negatif sekaligus).",
+    "Percentage of mentions the AI classified as negative. Breakdown: negative, positive, and mixed (both positive and negative) counts.",
   countries_tracked:
-    "Jumlah negara yang terdeteksi dari data. Lokasi diduga dari negara Google Play review (pasti), bahasa, subreddit, dan domain website — selalu dengan skor confidence.",
+    "Number of countries detected in the data. Location is inferred from the Google Play review country (exact), language, subreddit, and website domain — always with a confidence score.",
   open_alerts:
-    "Anomali aktif yang terdeteksi otomatis (lonjakan keluhan atau penurunan sentimen yang tidak wajar). Klik untuk melihat detail dan timeline insiden.",
+    "Active anomalies detected automatically (complaint spikes or unusual sentiment drops). Click to see details and the incident timeline.",
   volume_sentiment:
-    "Grafik garis: volume = jumlah mention per hari (batang), sentimen = rata-rata tertimbang per hari (garis). Warna merah = negatif, hijau = positif.",
+    "Line/bar chart: volume = mentions per day (bars), sentiment = weighted daily average (line). Red = negative, green = positive.",
   sentiment_by_country:
-    "Peringkat negara berdasarkan jumlah mention. Angka pertama = sentimen tertimbang (-1..+1), angka kedua = jumlah mention. Klik negara untuk halaman detail peta.",
+    "Countries ranked by mention count. First number = weighted sentiment (-1..+1), second = mention count. Click a country to open the map detail page.",
   sentiment_by_platform:
-    "Dari channel mana mention berasal (reddit/youtube/gplay/tavily) dan bagaimana sentimennya per channel.",
+    "Which channel the mentions come from (reddit/youtube/gplay/tavily) and how sentiment differs per channel.",
   topics_table:
-    "Topik yang paling banyak dibahas dalam 7 hari terakhir. Share = porsi dari total mention; sentimen = rata-rata tertimbang topik itu. Klik baris untuk melihat tren dan contoh mention.",
+    "Most-discussed topics in the last 7 days. Share = portion of total mentions; sentiment = weighted average for that topic. Click a row to see trends and example mentions.",
   journey_funnel:
-    "Tahap perjalanan user yang disimpulkan AI dari isi postingan: signup → KYC → deposit → trading → withdrawal → support. Bar = jumlah mention per tahap; angka = sentimen rata-rata tahap itu. Tahap paling merah = titik paling bermasalah.",
+    "User journey stages inferred by AI from post content: signup → KYC → deposit → trading → withdrawal → support. Bars = mentions per stage; numbers = average sentiment for that stage. The reddest stage is the biggest pain point.",
   dominant_negative_aspects:
-    "Aspek produk yang paling sering dikeluhkan (mis. 'withdrawal delay', 'kyc'), dilengkapi tahap journey tempat keluhan itu muncul.",
+    "Most-complained-about product aspects (e.g. 'withdrawal delay', 'kyc'), with the journey stage where the complaints appear.",
   emerging_topics:
-    "Topik yang pembahasannya naik signifikan minggu ini dibanding minggu sebelumnya — sinyal dini isu yang sedang membesar.",
+    "Topics whose discussion grew significantly this week versus last week — an early signal of an issue that is getting bigger.",
   hourly_pattern:
-    "Jam lokal pengguna (bukan jam server) ketika postingan dibuat. Pola keluhan tengah malam biasanya menandakan masalah layanan yang mendesak.",
+    "Users' local hour (not server time) when the post was made. Late-night complaint patterns usually indicate urgent service problems.",
   evidence:
-    "Kutipan postingan asli berdampak tertinggi (sentimen × engagement). Klik tautan sumber untuk membuka postingan aslinya di tab baru dan memverifikasi/membalas langsung.",
+    "Highest-impact original post quotes (sentiment × engagement). Click the source link to open the original post in a new tab and verify or reply directly.",
   data_sources:
-    "Status pengambilan data per channel: kapan terakhir kali data di-grab, jadwal otomatis (cron), dan tombol untuk mengambil data terbaru sekarang tanpa menunggu jadwal.",
-  last_grab: "Waktu terakhir kali worker berhasil mengambil data dari channel ini (dari tabel query_state).",
+    "Data fetch status per channel: when data was last grabbed, the automatic schedule (cron), and a button to fetch fresh data now without waiting for the schedule.",
+  last_grab: "The last time the worker successfully fetched data from this channel (from the query_state table).",
   grab_now:
-    "Ambil data terbaru dari channel ini sekarang juga. Job dikirim ke queue worker — data baru muncul beberapa saat setelah selesai (proses AI enrichment berjalan setelahnya).",
-  grab_all: "Ambil data terbaru dari SEMUA channel sekaligus sekarang juga.",
+    "Fetch the latest data from this channel right now. The job is sent to the worker queue — new data appears shortly after it finishes (AI enrichment runs afterwards).",
+  grab_all: "Fetch the latest data from ALL channels at once, right now.",
   map_country:
-    "Peta dunia: warna = sentimen (merah negatif, hijau positif), intensitas = jumlah mention. Klik negara untuk melihat rincian.",
-  latest_mentions: "Postingan terbaru dari negara terpilih. Tautan sumber membuka postingan asli di tab baru.",
-  funnel_aspect: "Tabel silang: aspek keluhan apa yang dominan di setiap tahap journey user.",
+    "World map: color = sentiment (red negative, green positive), intensity = mention count. Click a country for details.",
+  latest_mentions: "Newest posts from the selected country. The source link opens the original post in a new tab.",
+  funnel_aspect: "Cross table: which complaint aspects dominate each user journey stage.",
   alerts_zscore:
-    "z-score = seberapa jauh nilai sekarang menyimpang dari rata-rata normal (dalam satuan simpangan baku). Di atas ~3 berarti anomadi statistik yang nyata.",
-  alerts_baseline: "baseline = nilai normal rata-rata; observed = nilai yang terjadi pada window 2 jam terakhir.",
-  alerts_confidence: "Seberapa yakin detektor bahwa ini anomali sungguhan (bukan fluktuasi acak).",
-  alerts_timeline: "Kronologi kejadian anomali: kapan terdeteksi, kapan dikonfirmasi, dan bagaimana perkembangannya.",
-  share_of_voice: "Porsi percakapan yang membicarakan tiap brand dari total percakapan semua brand yang dipantau.",
-  brand_sentiment: "Perbandingan sentimen antar brand — Deriv vs kompetitor (Exness, IQ Option, OctaFX).",
-  aspect_matrix: "Sentimen per aspek produk (withdrawal, platform, dsb.) antar brand — tempat Deriv unggul atau tertinggal.",
-  switchers: "Postingan nyata dari user yang menyatakan pindah dari satu brand ke brand lain. Klik sumber untuk membaca postingan aslinya.",
+    "z-score = how far the current value deviates from the normal average, in standard deviations. Above ~3 means a statistically real anomaly.",
+  alerts_baseline: "baseline = the normal average value; observed = what happened in the last 2-hour window.",
+  alerts_confidence: "How confident the detector is that this is a real anomaly (not random noise).",
+  alerts_timeline: "Chronology of the anomaly: when it was detected, confirmed, and how it evolved.",
+  share_of_voice: "The share of conversation about each brand out of all monitored brand conversations.",
+  brand_sentiment: "Sentiment comparison across brands — Deriv vs competitors (Exness, IQ Option, OctaFX).",
+  aspect_matrix: "Sentiment per product aspect (withdrawal, platform, etc.) across brands — where Deriv leads or lags.",
+  switchers: "Real posts from users saying they switched from one brand to another. Click the source to read the original post.",
   kol_score:
-    "Skor pengaruh = total engagement × frekuensi posting × dampak negatif. Skor tinggi + banyak keluhan = risiko reputasi; skor tinggi + positif = kandidat advocate.",
-  kol_profile: "Klik nama author untuk membuka profil/channel aslinya di tab baru (Reddit/YouTube).",
-  kol_example: "Contoh postingan terbaru dari author ini — klik untuk membuka di tab baru.",
-  version_rating: "Rata-rata bintang Google Play review yang menyebut versi aplikasi ini.",
-  version_sentiment: "Sentimen AI dari teks review untuk versi ini — bisa beda dari rating bintang.",
-  version_aspects: "Keluhan/puji utama yang muncul di versi ini; merah = keluhan, hijau = pujian.",
+    "Influence score = total engagement × posting frequency × negative impact, boosted by channel reach (subscribers) when known. High score + many complaints = reputational risk; high score + positive = advocate candidate.",
+  kol_profile: "Click an author name to open their original profile/channel in a new tab (Reddit/YouTube).",
+  kol_example: "A recent post from this author — click to open it in a new tab.",
+  kol_reach: "Channel size: YouTube subscriber count when known. Bigger reach = bigger impact per post. '—' for individual accounts (Reddit users, commenters).",
+  version_rating: "Average star rating of Google Play reviews that mention this app version.",
+  version_sentiment: "AI sentiment from the review text for this version — can differ from the star rating.",
+  version_aspects: "Main complaints/praise for this version; red = complaints, green = praise.",
   correlation_r:
-    "Koefisien Pearson r (-1..+1): seberapa kuat dua metrik bergerak bersamaan. Di atas 0.4 atau di bawah -0.4 = hubungan yang berarti (belum tentu sebab-akibat).",
-  search_score: "Skor relevansi hasil pencarian (gabungan keyword match + kemiripan makna).",
-  ask_tab: "Ajukan pertanyaan dalam bahasa bebas — AI menjawab berdasarkan data yang terkumpul, lengkap dengan agregasi yang dipakai.",
-  draft_reply: "AI menyusun draf balasan (dalam bahasa postingan asli) yang bisa Anda copy ke platform sumbernya.",
-  faq_generated: "Pertanyaan yang paling sering muncul dari data nyata, dijawab otomatis oleh AI dalam bahasa user.",
-  tickets: "Draf balasan yang Anda tandai 'escalate' dari halaman Search masuk ke antrean di sini.",
-  llm_costs: "Estimasi biaya pemakaian AI (LLM) per keperluan: enrichment sentimen, chat, copilot, dll.",
-  bot_filter: "Postingan yang terdeteksi bot/spam otomatis dikeluarkan dari semua analitik.",
-  enrichment: "Setiap postingan dianalisis AI: sentimen, emosi, aspek keluhan, topik, tahap journey, negara, dan bot detection.",
+    "Pearson r (-1..+1): how strongly two metrics move together. Above 0.4 or below -0.4 = a meaningful relationship (not necessarily causal).",
+  search_score: "Relevance score of the search result (keyword match + semantic similarity combined).",
+  search_brand: "Only mentions about the selected brand are searched. Switch to 'All brands' to include competitor and unbranded posts.",
+  ask_tab: "Ask questions in free-form language — the AI answers from the collected data, including the aggregations it used.",
+  draft_reply: "The AI drafts a reply (in the original post's language) that you can copy to the source platform.",
+  faq_generated: "The most frequent questions from real data, answered automatically by AI in the user's language.",
+  tickets: "Replies you flagged as 'escalate' from the Search page land in the queue here.",
+  llm_costs: "Estimated AI (LLM) usage cost per purpose: sentiment enrichment, chat, copilot, etc.",
+  bot_filter: "Posts detected as bot/spam are automatically excluded from all analytics.",
+  enrichment: "Every post is analyzed by AI: sentiment, emotion, complaint aspects, topics, journey stage, country, and bot detection.",
+  translate: "Show an AI-generated English translation of this post. The original language is preserved; translations are cached so they are only computed once.",
+  keywords_page:
+    "The search keywords actively used per channel to collect data. Edit them to broaden or narrow what the pipeline collects — changes apply to the next scheduled or manual grab.",
+  keywords_edit:
+    "Add keywords with the input, remove them with ×, then Save. Order matters for quota-limited channels (YouTube runs the first keywords first). 'Reset to defaults' restores the environment defaults.",
 } as const;
 
 export type HelpKey = keyof typeof HELP;
@@ -74,43 +81,45 @@ export interface GlossaryEntry {
 
 export const GLOSSARY: { section: string; entries: GlossaryEntry[] }[] = [
   {
-    section: "Metrik utama",
+    section: "Core metrics",
     entries: [
-      { term: "Mention", definition: "Satu unit data: postingan Reddit, komentar YouTube, review Google Play, atau artikel web yang menyebut brand yang dipantau." },
-      { term: "Sentimen", definition: "Klasifikasi AI: positive / negative / neutral / mixed, dengan skor -1 sampai +1 dan tingkat confidence." },
-      { term: "Weighted sentiment", definition: "Rata-rata sentimen yang dibobot engagement. Postingan populer (banyak view/like/komentar) diberi pengaruh lebih besar." },
-      { term: "Engagement", definition: "Interaksi pada postingan asli: skor/upvote Reddit, views/likes YouTube, thumbs-up Google Play. Dipakai untuk membobot pengaruh." },
-      { term: "Share of voice", definition: "Persentase percakapan yang membicarakan satu brand dibanding semua brand yang dipantau." },
+      { term: "Mention", definition: "One unit of data: a Reddit post, YouTube comment, Google Play review, or web article mentioning a monitored brand." },
+      { term: "Sentiment", definition: "AI classification: positive / negative / neutral / mixed, with a score from -1 to +1 and a confidence level." },
+      { term: "Weighted sentiment", definition: "Engagement-weighted average sentiment. Popular posts (many views/likes/comments) get more influence." },
+      { term: "Engagement", definition: "Interactions on the original post: Reddit score/upvotes, YouTube views/likes, Google Play thumbs-up. Used to weight influence." },
+      { term: "Share of voice", definition: "The percentage of conversation about one brand compared to all monitored brands." },
     ],
   },
   {
     section: "AI enrichment",
     entries: [
-      { term: "Aspect", definition: "Aspek spesifik yang dibahas, mis. 'withdrawal delay', 'kyc document', 'app crash' — disimpulkan AI dari teks." },
-      { term: "Topic", definition: "Label topik yang lebih luas dari aspek, dipakai untuk pelacakan tren dan deteksi anomali per topik." },
-      { term: "Journey stage", definition: "Tahap perjalanan user: signup, kyc, deposit, trading, withdrawal, support — menunjukkan di bagian mana user terkendala." },
-      { term: "Lokasi (located)", definition: "Negara asal mention, diduga dari negara Google Play (confidence tinggi), bahasa, subreddit, atau domain. Tidak semua mention bisa dilokasi." },
-      { term: "Local hour", definition: "Jam lokal di negara pengguna saat posting — dipakai untuk pola 'keluhan tengah malam'." },
-      { term: "Bot detection", definition: "AI menandai postingan spam/bot; yang terdeteksi dikeluarkan dari semua angka analitik." },
+      { term: "Aspect", definition: "A specific thing being discussed, e.g. 'withdrawal delay', 'kyc document', 'app crash' — inferred by AI from the text." },
+      { term: "Topic", definition: "A broader topic label than aspect, used for trend tracking and per-topic anomaly detection." },
+      { term: "Journey stage", definition: "The user journey stage: signup, kyc, deposit, trading, withdrawal, support — shows where users get stuck." },
+      { term: "Location (located)", definition: "The country a mention came from, inferred from Google Play country (high confidence), language, subreddit, or domain. Not every mention can be located." },
+      { term: "Local hour", definition: "The user's local hour when posting — used for 'late-night complaints' patterns." },
+      { term: "Bot detection", definition: "AI flags spam/bot posts; flagged posts are excluded from all analytics numbers." },
+      { term: "Brand tag", definition: "Brands explicitly named in the text (Deriv, Exness, IQ Option, OctaFX). Analytics default to Deriv-only; competitor posts are kept for benchmarking." },
     ],
   },
   {
-    section: "Deteksi & peringatan",
+    section: "Detection & alerting",
     entries: [
-      { term: "z-score", definition: "Seberapa jauh nilai sekarang menyimpang dari normal, dalam satuan simpangan baku. Di atas ~3 = anomali nyata." },
-      { term: "Baseline", definition: "Nilai rata-rata normal yang dipakai pembanding deteksi anomali." },
-      { term: "Severity", definition: "Tingkat keparahan alert: low, medium, high, critical — ditentukan dari z-score, confidence, dan dampak." },
+      { term: "z-score", definition: "How far the current value deviates from normal, in standard deviations. Above ~3 = a real anomaly." },
+      { term: "Baseline", definition: "The normal average value used as the comparison for anomaly detection." },
+      { term: "Severity", definition: "Alert severity: low, medium, high, critical — derived from z-score, confidence, and impact." },
     ],
   },
   {
-    section: "Sumber data & pipeline",
+    section: "Data sources & pipeline",
     entries: [
-      { term: "Reddit", definition: "Post dan komentar dari pencarian keyword (OAuth API). Tautan sumber menunjuk ke thread aslinya." },
-      { term: "YouTube", definition: "Video (judul, deskripsi, statistik) + komentar teratas. Tautan komentar menunjuk langsung ke komentar tersebut." },
-      { term: "Google Play", definition: "Review aplikasi per negara (termasuk rating bintang dan versi aplikasi). Tautan menunjuk ke review di Play Store." },
-      { term: "Tavily (web/news)", definition: "Artikel berita dan web yang menyebut brand, dicari lewat Tavily API." },
-      { term: "Grab / cron", definition: "Pengambilan data terjadwal otomatis: Reddit tiap 15 menit, YouTube & Google Play tiap jam, web tiap 6 jam. Bisa juga dipicu manual dari dashboard." },
-      { term: "Enrichment queue", definition: "Setelah di-grab, tiap item masuk antrean analisis AI. Angka analitik bertambah bertahap sampai antrean selesai." },
+      { term: "Reddit", definition: "Posts and comments from keyword search (OAuth API), plus subreddit-scoped searches. Source links point to the original thread." },
+      { term: "YouTube", definition: "Videos (title, description, statistics, channel subscribers) + top comments. Comment links point directly to the comment." },
+      { term: "Google Play", definition: "App reviews per country (including star rating and app version). Links point to the review on the Play Store." },
+      { term: "Tavily (web/news)", definition: "News and web articles mentioning the brand, found via the Tavily API." },
+      { term: "Grab / cron", definition: "Scheduled automatic fetching: Reddit every 15 minutes; YouTube & Google Play hourly; web every 6 hours. Can also be triggered manually from the dashboard." },
+      { term: "Keywords", definition: "The search terms used per channel when grabbing data. Editable on the Keywords page; changes apply from the next grab." },
+      { term: "Enrichment queue", definition: "After a grab, each item enters an AI analysis queue. Analytics numbers grow gradually until the queue drains." },
     ],
   },
 ];

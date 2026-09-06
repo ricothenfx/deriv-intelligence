@@ -50,10 +50,21 @@ async function apiGet(path: string, params: Record<string, string>): Promise<any
   return res.json();
 }
 
-function queries(): string[] {
+function envQueries(): string[] {
   return (process.env.REDDIT_QUERIES || "Deriv broker,Deriv withdrawal,Deriv review")
     .split(",")
     .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+function queries(opts: FetchOptions): string[] {
+  return opts.queries?.length ? opts.queries : envQueries();
+}
+
+function subreddits(): string[] {
+  return (process.env.REDDIT_SUBREDDITS || "")
+    .split(",")
+    .map((s) => s.trim().replace(/^\/?r\//i, ""))
     .filter(Boolean);
 }
 
@@ -102,10 +113,10 @@ export async function fetchReddit(opts: FetchOptions): Promise<FetchResult> {
   let apiCalls = 0;
   const limit = opts.limit ?? 500;
 
-  const collect = async (q: string, params: Record<string, string>): Promise<void> => {
+  const collect = async (q: string, params: Record<string, string>, path = "/search"): Promise<void> => {
     let after = "";
     for (let page = 0; page < 10; page++) {
-      const json = await apiGet("/search", {
+      const json = await apiGet(path, {
         q,
         sort: "new",
         limit: "100",
@@ -141,7 +152,7 @@ export async function fetchReddit(opts: FetchOptions): Promise<FetchResult> {
     }
   };
 
-  for (const q of queries()) {
+  for (const q of queries(opts)) {
     if (opts.window?.from && opts.window.to) {
       const fromSec = Math.floor(opts.window.from.getTime() / 1000);
       const toSec = Math.floor(opts.window.to.getTime() / 1000);
@@ -149,6 +160,13 @@ export async function fetchReddit(opts: FetchOptions): Promise<FetchResult> {
     } else {
       await collect(q, { type: "link", t: "week" });
       await collect(q, { type: "comment", t: "week" });
+    }
+  }
+
+  if (!opts.window && items.length < limit) {
+    const brand = (process.env.TARGET_BRAND || "Deriv").trim();
+    for (const sub of subreddits()) {
+      await collect(brand, { type: "link", t: "week", restrict_sr: "on" }, `/r/${sub}/search`);
     }
   }
 

@@ -17,23 +17,23 @@ interface JobUi extends FetchJobStatus {
 const EMPTY_JOB: Pick<JobUi, "fetched" | "inserted" | "error"> = { fetched: null, inserted: null, error: null };
 
 function relTime(iso: string | null): string {
-  if (!iso) return "belum pernah";
+  if (!iso) return "never";
   const diff = Date.now() - new Date(iso).getTime();
   if (Number.isNaN(diff)) return "—";
   const m = Math.floor(diff / 60000);
-  if (m < 1) return "baru saja";
-  if (m < 60) return `${m} menit lalu`;
+  if (m < 1) return "just now";
+  if (m < 60) return `${m} min ago`;
   const h = Math.floor(m / 60);
-  if (h < 24) return `${h} jam lalu`;
-  return `${Math.floor(h / 24)} hari lalu`;
+  if (h < 24) return `${h} h ago`;
+  return `${Math.floor(h / 24)} d ago`;
 }
 
 const STAGE_LABEL: Record<string, string> = {
-  waiting: "menunggu worker…",
-  active: "sedang mengambil data…",
-  delayed: "menunggu worker…",
-  completed: "selesai",
-  failed: "gagal",
+  waiting: "queued…",
+  active: "fetching data…",
+  delayed: "queued…",
+  completed: "done",
+  failed: "failed",
 };
 
 const isRunning = (j: JobUi | undefined): boolean =>
@@ -89,7 +89,7 @@ export function DataSourcesCard() {
           setJobs((prev) => {
             const cur = prev[j.jobId];
             if (!cur || !isRunning(cur)) return prev;
-            return { ...prev, [j.jobId]: { ...cur, state: "failed", error: "worker/Redis tidak terjangkau" } };
+            return { ...prev, [j.jobId]: { ...cur, state: "failed", error: "worker/Redis unreachable" } };
           });
           changed = true;
         }
@@ -135,8 +135,8 @@ export function DataSourcesCard() {
     <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-sm font-medium text-slate-300">
-          Sumber data &amp; kesegaran
-          <InfoTip text="Status pengambilan data per channel: kapan terakhir di-grab, jadwal otomatis (cron), dan tombol untuk mengambil data terbaru sekarang tanpa menunggu jadwal. Job dikirim ke worker (pnpm dev:worker) — hasil muncul beberapa saat setelah selesai." />
+          Data sources &amp; freshness
+          <InfoTip text="Data fetch status per channel: when data was last grabbed, the automatic schedule (cron), and a button to fetch fresh data now without waiting for the schedule. Jobs are sent to the worker (pnpm dev:worker) — results appear shortly after completion." />
         </h3>
         <button
           onClick={() => grab("all")}
@@ -144,16 +144,16 @@ export function DataSourcesCard() {
           className="inline-flex items-center gap-1.5 rounded-md bg-sky-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-sky-500 disabled:opacity-50"
         >
           <RefreshCw size={12} className={anyRunning ? "animate-spin" : ""} />
-          {anyRunning ? "mengambil…" : "Grab semua channel"}
+          {anyRunning ? "fetching…" : "Grab all channels"}
         </button>
       </div>
 
       {error && (
         <div className="mb-2 rounded border border-rose-500/30 bg-rose-500/10 p-2 text-[11px] text-rose-300">
-          {error} — pastikan Redis (`pnpm docker:up`) dan worker (`pnpm dev:worker`) berjalan.
+          {error} — make sure Redis (`pnpm docker:up`) and the worker (`pnpm dev:worker`) are running.
         </div>
       )}
-      {!data && <div className="py-4 text-center text-xs text-slate-500">memuat status sumber…</div>}
+      {!data && <div className="py-4 text-center text-xs text-slate-500">loading source status…</div>}
 
       {data && (
         <>
@@ -171,7 +171,7 @@ export function DataSourcesCard() {
                     <button
                       onClick={() => grab(s.source)}
                       disabled={!!grabbing || anyRunning}
-                      title="Ambil data terbaru dari channel ini sekarang juga"
+                      title="Fetch the latest data from this channel right now"
                       className="inline-flex shrink-0 items-center gap-1 rounded border border-slate-700 bg-slate-900 px-2 py-1 text-[10px] font-medium text-sky-300 hover:bg-slate-800 disabled:opacity-40"
                     >
                       <RefreshCw size={10} className={running ? "animate-spin" : ""} />
@@ -180,18 +180,18 @@ export function DataSourcesCard() {
                   </div>
                   <div className="mt-2 space-y-1 text-[11px] text-slate-400">
                     <div>
-                      Terakhir grab: <span className="text-slate-200">{relTime(s.last_grab)}</span>
-                      {s.new_items > 0 && <span className="ml-1 text-emerald-400">(+{s.new_items} baru)</span>}
+                      Last grab: <span className="text-slate-200">{relTime(s.last_grab)}</span>
+                      {s.new_items > 0 && <span className="ml-1 text-emerald-400">(+{s.new_items} new)</span>}
                     </div>
                     <div>
-                      Jadwal otomatis: <span className="text-slate-300">{s.schedule}</span>
+                      Auto schedule: <span className="text-slate-300">{s.schedule}</span>
                     </div>
                     <div>
-                      Total item: <span className="text-slate-300">{s.items.toLocaleString()}</span>
+                      Total items: <span className="text-slate-300">{s.items.toLocaleString()}</span>
                     </div>
                     {s.quota_used != null && s.quota_budget != null && (
                       <div className={s.quota_used / s.quota_budget > 0.85 ? "text-amber-400" : ""}>
-                        Kuota API hari ini: {s.quota_used.toLocaleString()}/{s.quota_budget.toLocaleString()}
+                        API quota today: {s.quota_used.toLocaleString()}/{s.quota_budget.toLocaleString()}
                       </div>
                     )}
                   </div>
@@ -202,9 +202,9 @@ export function DataSourcesCard() {
                       }`}
                     >
                       {running && STAGE_LABEL[job.state]}
-                      {stuck && " — worker belum mengambil job; pastikan `pnpm dev:worker` berjalan"}
-                      {done && `selesai: ${job.fetched ?? 0} diambil, ${job.inserted ?? 0} baru`}
-                      {failed && `gagal: ${job.error ?? "unknown"}`}
+                      {stuck && " — the worker hasn't picked up the job; is `pnpm dev:worker` running?"}
+                      {done && `done: ${job.fetched ?? 0} fetched, ${job.inserted ?? 0} new`}
+                      {failed && `failed: ${job.error ?? "unknown"}`}
                     </div>
                   )}
                 </div>
@@ -212,9 +212,9 @@ export function DataSourcesCard() {
             })}
           </div>
           <div className="mt-2 text-[10px] text-slate-500">
-            Setelah grab, AI enrichment berjalan di latar belakang
-            {data.pending_enrichment > 0 && <> — {data.pending_enrichment.toLocaleString()} item sedang menunggu dianalisis</>};
-            angka analitik bertambah bertahap sampai antrean selesai.
+            After a grab, AI enrichment runs in the background
+            {data.pending_enrichment > 0 && <> — {data.pending_enrichment.toLocaleString()} items waiting to be analyzed</>};
+            analytics numbers grow gradually until the queue drains.
           </div>
         </>
       )}
