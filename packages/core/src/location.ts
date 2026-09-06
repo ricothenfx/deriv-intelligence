@@ -84,7 +84,7 @@ export function estimateLocation(meta: {
   }
 
   const entries = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-  if (!entries.length || entries[0][1] < 0.25) return { country: null, confidence: 0 };
+  if (!entries.length || entries[0][1] < 0.15) return { country: null, confidence: 0 };
   const total = entries.reduce((s, [, v]) => s + v, 0);
   return { country: entries[0][0], confidence: Math.min(0.9, Number((entries[0][1] / total).toFixed(2))) };
 }

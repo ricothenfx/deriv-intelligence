@@ -5,6 +5,7 @@ export interface Filters {
   source?: string | null;
   sentiment?: string | null;
   topic?: string | null;
+  brand?: string | null;
   from?: string | null;
   to?: string | null;
 }
@@ -18,8 +19,13 @@ export const ENG_WEIGHT = `case i.source
   else 1 end`;
 
 export function buildWhere(f: Filters): { where: string; params: unknown[] } {
-  const conds = ["e.is_bot = false", "e.sentiment is not null"];
-  const params: unknown[] = [];
+  const brand = (f.brand || "deriv").trim().toLowerCase();
+  const conds = [
+    "e.is_bot = false",
+    "e.sentiment is not null",
+    brand === "*" ? "e.brands <> '{}'" : "e.brands @> ARRAY[$1]::text[]",
+  ];
+  const params: unknown[] = brand === "*" ? [] : [brand];
   if (f.from) {
     params.push(f.from);
     conds.push(`i.published_at >= $${params.length}::timestamptz`);

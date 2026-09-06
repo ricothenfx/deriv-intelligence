@@ -13,11 +13,52 @@ interface GReview {
   thumbsUp: number;
 }
 
+const COUNTRY_LANG: Record<string, string> = {
+  id: "id", br: "pt", vn: "vi", th: "th", my: "ms", pk: "ur", bd: "bn",
+};
+
 function countries(): string[] {
   return (process.env.GPLAY_COUNTRIES || "us,gb,ng,id")
     .split(",")
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean);
+}
+
+function langFor(country: string): string {
+  const extra = process.env.GPLAY_LANGS;
+  if (extra) {
+    const map: Record<string, string> = {};
+    for (const part of extra.split(",").map((s) => s.trim()).filter(Boolean)) {
+      const [c, l] = part.split(":").map((x) => x?.trim().toLowerCase());
+      if (c && l) map[c] = l;
+    }
+    if (map[country]) return map[country];
+  }
+  return COUNTRY_LANG[country] ?? "en";
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+async function fetchReviews(appId: string, country: string, lang: string, num: number): Promise<GReview[]> {
+  const out: GReview[] = [];
+  let token: string | null = null;
+  for (let page = 0; page < 6 && out.length < num; page++) {
+    const res: unknown = await gplay.reviews({
+      appId,
+      country,
+      lang,
+      sort: 2,
+      num: Math.min(num - out.length, 150),
+      ...(token ? { paginate: true, nextPaginationToken: token } : {}),
+    } as never);
+    const r = res as { data?: GReview[]; nextPaginationToken?: string | null };
+    const batch = r.data ?? [];
+    out.push(...batch);
+    token = r.nextPaginationToken ?? null;
+    if (!token || batch.length === 0) break;
+    await sleep(400);
+  }
+  return out.slice(0, num);
 }
 
 export async function fetchGplay(opts: FetchOptions): Promise<FetchResult> {
@@ -28,8 +69,16 @@ export async function fetchGplay(opts: FetchOptions): Promise<FetchResult> {
   const items: NormalizedItem[] = [];
 
   for (const c of countries()) {
-    const res = await gplay.reviews({ appId, country: c, sort: 2, num } as any);
-    const reviews = ((res as any).data ?? []) as GReview[];
+    const lang = langFor(c);
+    let reviews: GReview[] = [];
+    try {
+      reviews = await fetchReviews(appId, c, lang, num);
+      if (reviews.length === 0 && lang !== "en") {
+        reviews = await fetchReviews(appId, c, "en", num);
+      }
+    } catch {
+      continue;
+    }
     const lastDate = cursors[c] ? new Date(cursors[c]) : null;
     let newest: Date | null = null;
     for (const r of reviews) {
@@ -48,7 +97,7 @@ export async function fetchGplay(opts: FetchOptions): Promise<FetchResult> {
         title: r.title || null,
         content: text,
         author: r.userName || null,
-        language: null,
+        language: lang,
         publishedAt: d,
         engagement: { score: r.score, thumbsUp: r.thumbsUp ?? 0 },
         metadata: {
@@ -60,6 +109,7 @@ export async function fetchGplay(opts: FetchOptions): Promise<FetchResult> {
       });
     }
     if (newest) nextCursors[c] = newest.toISOString();
+    await sleep(300);
   }
 
   return {

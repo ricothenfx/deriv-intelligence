@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { Card, EmptyHint, Loading, SentimentPill, toneClass } from "@/components/ui";
-import { getJson, postJson, type ChatLogEntry, type GroupStat, type MentionRow } from "@/lib/api";
+import { getJson, postJson, type ChatLogEntry, type CopilotDraft, type GroupStat, type MentionRow } from "@/lib/api";
 
 interface ChatMsg {
   role: "user" | "assistant";
@@ -123,26 +123,89 @@ function SearchTab() {
 
       <div className="space-y-2">
         {results?.map((m) => (
-          <div key={m.id} className="rounded-lg border border-slate-800 bg-slate-900/60 p-3 text-xs">
-            <div className="mb-1.5 flex flex-wrap items-center gap-2">
-              <SentimentPill sentiment={m.sentiment} />
-              <span className="text-slate-500">
-                {m.country ?? "?"} · {m.stage ?? "-"} · {m.source} · {m.published_at}
-              </span>
-              {m.topics.slice(0, 3).map((t) => (
-                <span key={t} className="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-sky-300">{t}</span>
-              ))}
-              <span className="ml-auto text-[10px] text-slate-600">score {(m.score ?? 0).toFixed(3)}</span>
-            </div>
-            <p className="line-clamp-3 text-slate-300">{m.content}</p>
-            {m.url && (
-              <a href={m.url} target="_blank" rel="noreferrer" className="mt-1 inline-block text-[11px] text-sky-400 hover:underline">
-                open source →
-              </a>
-            )}
-          </div>
+          <MentionCard key={m.id} m={m} />
         ))}
       </div>
+    </div>
+  );
+}
+
+function MentionCard({ m }: { m: MentionRow }) {
+  const [draft, setDraft] = useState<CopilotDraft | null>(null);
+  const [drafting, setDrafting] = useState(false);
+  const [escalated, setEscalated] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const draftReply = async () => {
+    if (drafting || draft) return;
+    setDrafting(true);
+    setError(null);
+    try {
+      const res = await postJson<CopilotDraft>("/api/copilot", { itemId: m.id });
+      setDraft(res);
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setDrafting(false);
+    }
+  };
+
+  const escalate = async () => {
+    if (!draft) return;
+    setError(null);
+    try {
+      const res = await postJson<{ ticket_id: number }>("/api/copilot/escalate", {
+        itemId: m.id,
+        draft: draft.draft,
+        severity: draft.severity,
+      });
+      setEscalated(res.ticket_id);
+    } catch (e) {
+      setError(String(e));
+    }
+  };
+
+  return (
+    <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-3 text-xs">
+      <div className="mb-1.5 flex flex-wrap items-center gap-2">
+        <SentimentPill sentiment={m.sentiment} />
+        <span className="text-slate-500">
+          {m.country ?? "?"} · {m.stage ?? "-"} · {m.source} · {m.published_at}
+        </span>
+        {m.topics.slice(0, 3).map((t) => (
+          <span key={t} className="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-sky-300">{t}</span>
+        ))}
+        <span className="ml-auto text-[10px] text-slate-600">score {(m.score ?? 0).toFixed(3)}</span>
+      </div>
+      <p className="line-clamp-3 text-slate-300">{m.content}</p>
+      <div className="mt-1.5 flex flex-wrap items-center gap-3">
+        {m.url && (
+          <a href={m.url} target="_blank" rel="noreferrer" className="text-[11px] text-sky-400 hover:underline">
+            open source →
+          </a>
+        )}
+        <button onClick={draftReply} disabled={drafting || !!draft} className="text-[11px] text-sky-400 hover:underline disabled:opacity-50">
+          {drafting ? "drafting…" : draft ? "draft ✓" : "✍ Draft reply"}
+        </button>
+      </div>
+      {error && <div className="mt-1 text-[11px] text-rose-300">{error}</div>}
+      {draft && (
+        <div className="mt-2 rounded-md border border-slate-700 bg-slate-950/60 p-2.5">
+          <div className="mb-1.5 flex flex-wrap items-center gap-2 text-[10px] text-slate-500">
+            <span className="rounded bg-slate-800 px-1.5 py-0.5 text-slate-300">copilot · {draft.tone.slice(0, 40)}</span>
+            <span className="rounded bg-slate-800 px-1.5 py-0.5 uppercase text-slate-300">{draft.severity}</span>
+            {draft.rationale && <span className="italic">{draft.rationale}</span>}
+          </div>
+          <p className="whitespace-pre-wrap text-slate-200">{draft.draft}</p>
+          {escalated ? (
+            <div className="mt-1.5 text-[11px] text-emerald-400">escalated → ticket #{escalated}</div>
+          ) : (
+            <button onClick={escalate} className="mt-1.5 rounded bg-amber-600/80 px-2.5 py-1 text-[11px] font-medium text-white hover:bg-amber-500">
+              Escalate to ticket
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -48,10 +48,16 @@ Anomaly detection (z-score on volume & sentiment per country/topic) → alert + 
 |---|---|---|
 | Reddit | OAuth app-only (100 QPM) | link+comment search, incremental cursor |
 | YouTube | Data API v3 (10k units/day) | search (100 units) + commentThreads (1 unit), quota tracking |
-| Google Play | scraper per country | **strongest location signal** (exact country), rating, app version |
+| Google Play | scraper per country+language | **strongest location signal** (exact country), rating, app version |
 | Web | Tavily (1000 credits/month) | topic=news, days param |
 
 X API & TikTok Research API: Phase 3 backlog (cost/approval).
+
+## Phases
+
+- **Phase 1 (done)** — ingestion, tiered enrichment, hybrid search, journey funnel, crisis alerts, weekly PDF report, ask-your-market chat, cost dashboard
+- **Phase 2 (done)** — competitor benchmark (`/competitors`: share of voice, aspect matrix, switcher detection), KOL radar (`/kol`), Google Play per-version pain points (`/versions`)
+- **Phase 3 partial (free sources)** — response copilot + ticket escalation (`/search` → "Draft reply"), timeline replay map (`/replay`), correlation insights (`/insights`), auto-FAQ (`/faq`). X API / TikTok remain blocked on budget/approval.
 
 ## Key commands
 

@@ -67,20 +67,22 @@ function record(
   purpose: string,
   source: string | null | undefined,
   model: string,
-  usage: { prompt_tokens: number; completion_tokens: number } | undefined,
+  usage: { prompt_tokens?: number; completion_tokens?: number } | undefined,
 ): void {
   if (!sink || !usage) return;
   const price = parsePrices()[model];
+  const inputTokens = usage.prompt_tokens ?? 0;
+  const outputTokens = usage.completion_tokens ?? 0;
   const costUsd = price
-    ? (usage.prompt_tokens / 1e6) * price.input + (usage.completion_tokens / 1e6) * price.output
+    ? (inputTokens / 1e6) * price.input + (outputTokens / 1e6) * price.output
     : null;
   void Promise.resolve(
     sink({
       purpose,
       model,
       source: source ?? null,
-      inputTokens: usage.prompt_tokens,
-      outputTokens: usage.completion_tokens,
+      inputTokens,
+      outputTokens,
       costUsd,
     }),
   ).catch(() => {});

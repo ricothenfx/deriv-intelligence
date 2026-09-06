@@ -199,8 +199,8 @@ async function main(): Promise<void> {
         inserted++;
         await c.query(
           `insert into item_enrichments
-            (item_id, sentiment, sentiment_score, sentiment_confidence, emotion, intensity, aspects, topics, journey_stage, language, location_country, location_confidence, local_hour, is_bot, llm_model)
-           values ($1,$2,$3,$4,$5,$6,$7::jsonb,$8::text[],$9,$10,$11,$12,$13,false,'seed')
+            (item_id, sentiment, sentiment_score, sentiment_confidence, emotion, intensity, aspects, topics, journey_stage, language, location_country, location_confidence, local_hour, is_bot, llm_model, mentions_brand, brands)
+           values ($1,$2,$3,$4,$5,$6,$7::jsonb,$8::text[],$9,$10,$11,$12,$13,false,'seed',true,'{deriv}')
            on conflict do nothing`,
           [
             id, s.template.sentiment, score, Number(s.confidence.toFixed(2)),

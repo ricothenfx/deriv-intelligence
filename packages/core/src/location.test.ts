@@ -28,9 +28,10 @@ describe("estimateLocation", () => {
     expect(r.confidence).toBe(0.52);
   });
 
-  it("drops weak signals below the 0.25 threshold (English)", () => {
+  it("locates English-only items with low confidence (weak language estimate)", () => {
     const r = estimateLocation({ source: "reddit", metadata: {}, language: "en" });
-    expect(r).toEqual({ country: null, confidence: 0 });
+    expect(r.country).toBe("US");
+    expect(r.confidence).toBeLessThanOrEqual(0.3);
   });
 
   it("returns null when no signals at all", () => {

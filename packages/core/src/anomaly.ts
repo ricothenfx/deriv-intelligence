@@ -29,13 +29,13 @@ async function volumeAnomalies(dimension: "country" | "topic"): Promise<Candidat
     `with cur as (
        select ${key} as k, count(*)::int as c
        ${BASE_JOIN} ${unnest}
-       where e.is_bot = false and e.sentiment is not null ${notNull}
+       where e.is_bot = false and e.sentiment is not null and e.brands @> ARRAY['deriv']::text[] ${notNull}
          and i.published_at >= now() - interval '2 hours'
        group by 1 having count(*) >= 8
      ), hist as (
        select ${key} as k, date_trunc('day', i.published_at) as d, count(*)::int as c
        ${BASE_JOIN} ${unnest}
-       where e.is_bot = false and e.sentiment is not null ${notNull}
+       where e.is_bot = false and e.sentiment is not null and e.brands @> ARRAY['deriv']::text[] ${notNull}
          and i.published_at >= now() - interval '8 days' and i.published_at < now() - interval '2 hours'
        group by 1, 2
      ), bas as (
@@ -81,14 +81,14 @@ async function sentimentAnomalies(): Promise<Candidate[]> {
          sum(e.sentiment_score * (${ENG_WEIGHT})) / nullif(sum(${ENG_WEIGHT}), 0) as s,
          count(*)::int as c
        ${BASE_JOIN}
-       where e.is_bot = false and e.sentiment is not null and e.location_country is not null
+       where e.is_bot = false and e.sentiment is not null and e.brands @> ARRAY['deriv']::text[] and e.location_country is not null
          and i.published_at >= now() - interval '24 hours'
        group by 1 having count(*) >= 15
      ), hist as (
        select e.location_country as k, date_trunc('day', i.published_at) as d,
          sum(e.sentiment_score * (${ENG_WEIGHT})) / nullif(sum(${ENG_WEIGHT}), 0) as s
        ${BASE_JOIN}
-       where e.is_bot = false and e.sentiment is not null and e.location_country is not null
+       where e.is_bot = false and e.sentiment is not null and e.brands @> ARRAY['deriv']::text[] and e.location_country is not null
          and i.published_at >= now() - interval '15 days' and i.published_at < now() - interval '1 day'
        group by 1, 2
      ), bas as (
@@ -287,7 +287,7 @@ async function resolveAlerts(): Promise<void> {
     const val = dim === "country" ? a.country : a.topic;
     const rows = await query<{ c: string }>(
       `select count(*)::int as c ${BASE_JOIN} ${unnest}
-       where e.is_bot = false and e.sentiment is not null and ${key} = $1
+       where e.is_bot = false and e.sentiment is not null and e.brands @> ARRAY['deriv']::text[] and ${key} = $1
          and i.published_at >= now() - interval '2 hours'`,
       [val],
     );

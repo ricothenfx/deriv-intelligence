@@ -64,8 +64,9 @@ async function runFetch(source: SourceName): Promise<void> {
 async function runBackfill(source: SourceName, days: number): Promise<void> {
   if (source === "gplay" || source === "tavily") {
     console.log(`${source}: no historical paging supported, running one wide fetch`);
-    const from = new Date(Date.now() - days * 86400_000);
-    const result = await CONNECTORS[source]({ window: { from } });
+    const lookback = source === "gplay" ? Math.max(days, 365) : days;
+    const from = new Date(Date.now() - lookback * 86400_000);
+    const result = await CONNECTORS[source]({ window: { from }, ...(source === "gplay" ? { limit: 500 } : {}) });
     const inserted = await ingestItems(result.items);
     console.log(`${source}: fetched=${result.items.length} new=${inserted.length}`);
     await enrichAll(inserted.map((x) => x.id));
@@ -116,12 +117,32 @@ async function main(): Promise<void> {
       console.log(`anomaly detection done, new alerts: ${created}`);
       break;
     }
+    case "enrich-pending": {
+      const { query } = await import("@deriv-intel/core");
+      const rows = await query<{ id: number; source: string }>(
+        `select i.id, i.source from items i
+         left join item_enrichments e on e.item_id = i.id
+         where e.item_id is null
+         order by i.id desc limit ${Math.min(Number(flags.limit ?? 2000), 10000)}`,
+      );
+      console.log(`pending enrichment: ${rows.length} items`);
+      if (rows.length) await enrichAll(rows.map((r) => r.id));
+      break;
+    }
+    case "faq": {
+      const { generateFaqs } = await import("@deriv-intel/core");
+      const out = await generateFaqs(Number(flags.max ?? 12));
+      console.log(`faq generated: ${out.created}`);
+      break;
+    }
     default:
       console.log(`usage:
   tsx src/cli.ts fetch <reddit|youtube|gplay|tavily>
   tsx src/cli.ts backfill --source <reddit|youtube|gplay|tavily> --days 30
   tsx src/cli.ts report [--notify false]
-  tsx src/cli.ts anomaly [--notify false]`);
+  tsx src/cli.ts anomaly [--notify false]
+  tsx src/cli.ts enrich-pending [--limit 2000]
+  tsx src/cli.ts faq [--max 12]`);
       process.exit(cmd ? 1 : 0);
   }
 }

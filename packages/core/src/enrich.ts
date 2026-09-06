@@ -15,6 +15,7 @@ export const classificationSchema = z.object({
   i: z.number().int(),
   language: z.string().min(2).max(10),
   mentions_brand: z.boolean(),
+  brands: z.array(z.string().min(2).max(30)).max(6).default([]),
   sentiment: z.enum(["positive", "negative", "neutral", "mixed"]),
   sentiment_confidence: z.number().min(0).max(1),
   emotion: z.string().nullable().optional(),
@@ -31,6 +32,7 @@ Classify each social post, app review, or web article excerpt about trading/fina
 Rules:
 - language: ISO 639-1 code of the dominant language (en, id, ms, vi, th, bn, ur, sw, fil, ru, pt, ar, ...).
 - mentions_brand: true only if the text is about the Deriv brand (deriv.app, Binary.com, Deriv Bot, DTrader, Deriv Go, Deriv CTOT count as true; math "derivatives" is false).
+- brands: every tracked trading brand this text is about, lowercase, from this list only: {tracked_brands}. Include "deriv" when mentions_brand is true. Empty array if none.
 - sentiment: overall sentiment toward the Deriv brand. Use "mixed" only when clearly both positive and negative.
 - aspects: distinct aspects mentioned, from this taxonomy: platform, app, withdrawal, deposit, kyc_verification, account, trading_experience, spreads_fees, support, security, regulation, bonuses, stability, payments, platform_performance. Each aspect carries its own sentiment.
 - topics: 1-3 short canonical topic tags in English, lowercase snake_case (e.g. withdrawal_delay, app_crash, kyc_pending, good_spreads, account_blocked, scam_accusation, customer_support, deposit_bonus).
@@ -38,16 +40,19 @@ Rules:
 - Slang counts: Indonesian "wd"/"withdraw" = withdrawal, "verif" = verification, "ribet" = cumbersome. Nigerian Pidgin "dem no gree pay" = negative withdrawal.
 Return strict JSON {"results":[...]} with exactly one object per input, in input order, using the input index as "i".
 Output format contract — every result object MUST have this exact shape:
-{"results":[{"i":0,"language":"en","mentions_brand":true,"sentiment":"negative","sentiment_confidence":0.85,"emotion":"frustration","intensity":0.7,"aspects":[{"name":"withdrawal","sentiment":"negative"},{"name":"support","sentiment":"negative"}],"topics":["withdrawal_delay"],"journey_stage":"withdrawal"}]}
+{"results":[{"i":0,"language":"en","mentions_brand":true,"brands":["deriv"],"sentiment":"negative","sentiment_confidence":0.85,"emotion":"frustration","intensity":0.7,"aspects":[{"name":"withdrawal","sentiment":"negative"},{"name":"support","sentiment":"negative"}],"topics":["withdrawal_delay"],"journey_stage":"withdrawal"}]}
 - "sentiment_confidence" is a REQUIRED number between 0 and 1 (never omit it).
 - "aspects" MUST be an array of {"name":"...","sentiment":"..."} objects, never an object map.
-- "emotion" and "intensity" are optional; all other fields are required.`;
+- "brands" is a REQUIRED array of lowercase strings (may be empty).
+- "emotion" and "intensity" are optional; all other fields are required.
+- Each user item may carry "found_via_query": the search query that surfaced it. It is a WEAK hint only — if the text itself shows no sign of any tracked brand, keep mentions_brand=false and brands=[] even if the query mentions a brand. But if the text is clearly about trading and plausibly about the queried brand (e.g. a broker review/tutorial without naming it), prefer tagging that brand.`;
 
 export interface ClassifyInput {
   i: number;
   source: string;
   title: string | null;
   text: string;
+  found_via_query?: string | null;
 }
 
 function normalizeResult(raw: unknown, fallbackSentiment: string): Record<string, unknown> | null {
@@ -86,8 +91,27 @@ function normalizeResult(raw: unknown, fallbackSentiment: string): Record<string
       .map((t) => (t as string).trim().slice(0, 40))
       .slice(0, 4);
   }
+  if (Array.isArray(r.brands)) {
+    r.brands = [...new Set(
+      (r.brands as unknown[])
+        .filter((b): b is string => typeof b === "string" && b.trim().length >= 2)
+        .map((b) => b.trim().toLowerCase().slice(0, 30)),
+    )].slice(0, 6);
+  } else {
+    r.brands = r.mentions_brand === true ? ["deriv"] : [];
+  }
   if (typeof r.language === "string") r.language = r.language.trim().slice(0, 10);
   return r;
+}
+
+const FALLBACK_BRANDS = ["deriv", "exness", "iq option", "octafx"];
+
+function trackedBrands(): string[] {
+  const raw = (process.env.TRACKED_BRANDS || FALLBACK_BRANDS.join(","))
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  return raw.length ? raw : FALLBACK_BRANDS;
 }
 
 export async function classifyTexts(inputs: ClassifyInput[]): Promise<(Classification | undefined)[]> {
@@ -97,7 +121,10 @@ export async function classifyTexts(inputs: ClassifyInput[]): Promise<(Classific
     tier: "cheap",
     purpose: "enrich",
     messages: [
-      { role: "system", content: SYSTEM_PROMPT },
+      {
+        role: "system",
+        content: SYSTEM_PROMPT.replaceAll("{tracked_brands}", trackedBrands().join(", ")),
+      },
       { role: "user", content: `Brand: ${brand}\nClassify these ${inputs.length} items:\n${JSON.stringify(inputs)}` },
     ],
     json: true,
@@ -146,8 +173,8 @@ async function insertEnrichment(vals: {
   await withTx(async (cl) => {
     await cl.query(
       `insert into item_enrichments
-        (item_id, sentiment, sentiment_score, sentiment_confidence, emotion, intensity, aspects, topics, journey_stage, language, location_country, location_confidence, local_hour, is_bot, bot_reason, llm_model)
-       values ($1,$2,$3,$4,$5,$6,$7::jsonb,$8::text[],$9,$10,$11,$12,$13,$14,$15,$16)
+        (item_id, sentiment, sentiment_score, sentiment_confidence, emotion, intensity, aspects, topics, journey_stage, language, location_country, location_confidence, local_hour, is_bot, bot_reason, llm_model, mentions_brand, brands)
+       values ($1,$2,$3,$4,$5,$6,$7::jsonb,$8::text[],$9,$10,$11,$12,$13,$14,$15,$16,$17,$18::text[])
        on conflict (item_id) do nothing`,
       [
         vals.item_id,
@@ -166,6 +193,8 @@ async function insertEnrichment(vals: {
         vals.is_bot,
         vals.bot_reason ?? null,
         vals.model ?? null,
+        c?.mentions_brand ?? null,
+        c?.brands ?? (c?.mentions_brand ? ["deriv"] : []),
       ],
     );
   });
@@ -208,7 +237,13 @@ export async function runEnrichment(itemIds: number[]): Promise<EnrichmentSummar
     const classified = new Map<number, Classification>();
     try {
       const results = await classifyTexts(
-        batch.map((r, j) => ({ i: j, source: r.source, title: r.title, text: r.content.slice(0, 1200) })),
+        batch.map((r, j) => ({
+          i: j,
+          source: r.source,
+          title: r.title,
+          text: r.content.slice(0, 1200),
+          found_via_query: typeof r.metadata?.query === "string" ? r.metadata.query : null,
+        })),
       );
       batch.forEach((r, j) => {
         if (results[j]) classified.set(r.id, results[j]!);
@@ -219,7 +254,15 @@ export async function runEnrichment(itemIds: number[]): Promise<EnrichmentSummar
     for (const [j, r] of batch.entries()) {
       if (!classified.has(r.id)) {
         try {
-          const single = await classifyTexts([{ i: 0, source: r.source, title: r.title, text: r.content.slice(0, 1200) }]);
+          const single = await classifyTexts([
+            {
+              i: 0,
+              source: r.source,
+              title: r.title,
+              text: r.content.slice(0, 1200),
+              found_via_query: typeof r.metadata?.query === "string" ? r.metadata.query : null,
+            },
+          ]);
           if (single[0]) classified.set(r.id, single[0]!);
         } catch (e) {
           console.error("enrich item failed:", r.id, e);

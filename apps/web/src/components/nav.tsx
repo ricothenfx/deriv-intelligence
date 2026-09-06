@@ -11,6 +11,12 @@ import {
   Search,
   FileText,
   Wallet,
+  Scale,
+  Users,
+  Tags,
+  PlayCircle,
+  LineChart,
+  HelpCircle,
 } from "lucide-react";
 
 const items = [
@@ -19,6 +25,12 @@ const items = [
   { href: "/funnel", label: "Journey Funnel", icon: Filter },
   { href: "/topics", label: "Topics & Trends", icon: Radar },
   { href: "/alerts", label: "Crisis Alerts", icon: MessageSquareWarning },
+  { href: "/competitors", label: "Benchmark", icon: Scale },
+  { href: "/kol", label: "KOL Radar", icon: Users },
+  { href: "/versions", label: "App Versions", icon: Tags },
+  { href: "/replay", label: "Timeline Replay", icon: PlayCircle },
+  { href: "/insights", label: "Insights", icon: LineChart },
+  { href: "/faq", label: "Auto-FAQ", icon: HelpCircle },
   { href: "/search", label: "Search & Ask", icon: Search },
   { href: "/reports", label: "Reports", icon: FileText },
   { href: "/costs", label: "LLM Costs", icon: Wallet },

@@ -88,6 +88,108 @@ export interface ChatLogEntry {
   summary: string;
 }
 
+export interface BrandStat {
+  brand: string;
+  mentions: number;
+  sentiment: number;
+  negative: number;
+  positive: number;
+  avg_engagement: number;
+  share: number;
+}
+
+export interface BrandAspectRow {
+  brand: string;
+  aspect: string;
+  sentiment: number;
+  mentions: number;
+}
+
+export interface SwitcherRow {
+  from_brand: string;
+  to_brand: string;
+  mentions: number;
+  sample: string;
+  url: string | null;
+  published_at: string | null;
+}
+
+export interface KolRow {
+  author: string;
+  source: string;
+  mentions: number;
+  total_engagement: number;
+  avg_sentiment: number;
+  negative_share: number;
+  countries: string[];
+  topics: string[];
+  score: number;
+  last_active: string | null;
+}
+
+export interface VersionRow {
+  version: string;
+  mentions: number;
+  avg_rating: number;
+  sentiment: number;
+  negative: number;
+  top_aspects: { name: string; sentiment: string }[];
+  top_topics: string[];
+  first_seen: string | null;
+  last_seen: string | null;
+}
+
+export interface ReplayBucket {
+  bucket: string;
+  country: string;
+  mentions: number;
+  sentiment: number;
+}
+
+export interface DailyMetric {
+  day: string;
+  sentiment: number;
+  mentions: number;
+  gplay_rating: number | null;
+  gplay_negative: number;
+}
+
+export interface Correlation {
+  name: string;
+  description: string;
+  r: number | null;
+  note: string;
+}
+
+export interface FaqRow {
+  id: number;
+  question: string;
+  answer: string;
+  language: string | null;
+  created_at: string;
+}
+
+export interface CopilotDraft {
+  item_id: number;
+  draft: string;
+  tone: string;
+  language: string;
+  escalate: boolean;
+  severity: string;
+  rationale: string;
+}
+
+export interface TicketRow {
+  id: number;
+  item_id: number;
+  draft: string | null;
+  severity: string;
+  status: string;
+  created_at: string;
+  content_preview: string | null;
+  country: string | null;
+}
+
 export async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error(`${url} -> ${res.status}`);

@@ -4,7 +4,7 @@ import { join } from "path";
 config({ path: join(__dirname, "../../../.env") });
 import { Worker, type Job } from "bullmq";
 import { setUsageSink } from "@deriv-intel/llm";
-import { detectAnomalies, generateWeeklyReport, withTx } from "@deriv-intel/core";
+import { detectAnomalies, generateFaqs, generateWeeklyReport, query, runEnrichment, withTx } from "@deriv-intel/core";
 import { processFetch, processEnrich } from "./processors/fetch";
 import { redisConnection } from "./redis";
 import { getQueue, QUEUE_ENRICH, QUEUE_FETCH, QUEUE_MAINTENANCE } from "./queues";
@@ -34,6 +34,24 @@ const maintenanceWorker = new Worker(
       const report = await generateWeeklyReport({ notify: true });
       return { id: report.id, filePath: report.filePath };
     }
+    if (job.name === "faq") {
+      const out = await generateFaqs(12);
+      return { created: out.created };
+    }
+    if (job.name === "reenrich") {
+      const rows = await query<{ id: number }>(
+        `select i.id from items i
+         left join item_enrichments e on e.item_id = i.id
+         where e.item_id is null and i.fetched_at < now() - interval '3 minutes'
+         order by i.id desc limit 800`,
+      );
+      let done = 0;
+      for (let k = 0; k < rows.length; k += 20) {
+        const out = await runEnrichment(rows.slice(k, k + 20).map((r) => r.id));
+        done += out.enriched + out.bots;
+      }
+      return { pending: rows.length, done };
+    }
     return { skipped: true };
   },
   { connection, concurrency: 1 },
@@ -57,8 +75,10 @@ async function schedule(): Promise<void> {
   await repeat(QUEUE_FETCH, "gplay", "40 * * * *", { source: "gplay" });
   await repeat(QUEUE_FETCH, "tavily", "0 */6 * * *", { source: "tavily" });
   await repeat(QUEUE_MAINTENANCE, "anomaly", "10 * * * *");
+  await repeat(QUEUE_MAINTENANCE, "reenrich", "*/10 * * * *");
   await repeat(QUEUE_MAINTENANCE, "report", "0 6 * * 1");
-  console.log("scheduled cron jobs: reddit */15m, youtube hourly, gplay hourly, tavily 6h, anomaly hourly, report weekly");
+  await repeat(QUEUE_MAINTENANCE, "faq", "30 6 * * 1");
+  console.log("scheduled cron jobs: reddit */15m, youtube hourly, gplay hourly, tavily 6h, anomaly hourly, reenrich */10m, report weekly, faq weekly");
 }
 
 async function shutdown(): Promise<void> {
