@@ -8,10 +8,13 @@ import {
   EmptyHint,
   Loading,
   SentimentPill,
+  SourceLink,
   Stat,
   toneClass,
 } from "@/components/ui";
+import { DataSourcesCard } from "@/components/data-sources";
 import { HourlyChart, TrendChart } from "@/components/charts";
+import { HELP } from "@/lib/help";
 import {
   fmtDelta,
   getJson,
@@ -93,10 +96,13 @@ export default function OverviewPage() {
         </div>
       </div>
 
+      <DataSourcesCard />
+
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         <Stat
           label={`Mentions (${days}d)`}
           value={o.mentions.toLocaleString()}
+          hint={HELP.mentions}
           sub={
             <span className={deltaMentions == null ? "" : deltaMentions >= 0 ? "text-emerald-400" : "text-rose-400"}>
               {fmtDelta(deltaMentions)} vs prev
@@ -107,6 +113,7 @@ export default function OverviewPage() {
           label="Weighted sentiment"
           value={o.weighted_sentiment.toFixed(3)}
           tone={toneClass(o.weighted_sentiment)}
+          hint={HELP.weighted_sentiment}
           sub={
             <span className={deltaSent >= 0 ? "text-emerald-400" : "text-rose-400"}>
               {deltaSent >= 0 ? "+" : ""}
@@ -118,13 +125,15 @@ export default function OverviewPage() {
           label="Negative share"
           value={`${((100 * o.negative) / Math.max(o.mentions, 1)).toFixed(0)}%`}
           tone="text-rose-400"
+          hint={HELP.negative_share}
           sub={`${o.negative} neg · ${o.positive} pos · ${o.mixed} mixed`}
         />
-        <Stat label="Countries tracked" value={data.countries.length} sub={`${o.located} mentions located`} />
+        <Stat label="Countries tracked" value={data.countries.length} sub={`${o.located} mentions located`} hint={HELP.countries_tracked} />
         <Stat
           label="Open alerts"
           value={openAlerts}
           tone={openAlerts > 0 ? "text-rose-400" : "text-emerald-400"}
+          hint={HELP.open_alerts}
           sub={
             <Link href="/alerts" className="underline">
               view alerts
@@ -133,13 +142,14 @@ export default function OverviewPage() {
         />
       </div>
 
-      <Card title={`Volume & sentiment — ${days} days (sentiment = engagement-weighted)`}>
+      <Card title={`Volume & sentiment — ${days} days (sentiment = engagement-weighted)`} hint={HELP.volume_sentiment}>
         <TrendChart data={data.series} />
       </Card>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card
           title="Sentiment by country (estimated location)"
+          hint={HELP.sentiment_by_country}
           action={
             <Link href="/countries" className="text-xs text-sky-400 hover:underline">
               map →
@@ -162,7 +172,7 @@ export default function OverviewPage() {
             />
           ))}
         </Card>
-        <Card title="Sentiment by platform">
+        <Card title="Sentiment by platform" hint={HELP.sentiment_by_platform}>
           {data.sources.map((s) => (
             <BarRow
               key={s.key}
@@ -183,6 +193,7 @@ export default function OverviewPage() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Card
           title="Journey funnel"
+          hint={HELP.journey_funnel}
           action={
             <Link href="/funnel" className="text-xs text-sky-400 hover:underline">
               details →
@@ -205,7 +216,7 @@ export default function OverviewPage() {
             </p>
           )}
         </Card>
-        <Card title="Dominant negative aspects">
+        <Card title="Dominant negative aspects" hint={HELP.dominant_negative_aspects}>
           {data.aspects.length === 0 && <EmptyHint>No negative aspects yet</EmptyHint>}
           <ul className="space-y-1.5">
             {data.aspects.slice(0, 7).map((a, i) => (
@@ -218,7 +229,7 @@ export default function OverviewPage() {
             ))}
           </ul>
         </Card>
-        <Card title="Emerging topics (7d vs prev)">
+        <Card title="Emerging topics (7d vs prev)" hint={HELP.emerging_topics}>
           {data.emerging.length === 0 && <EmptyHint>No rising trends yet</EmptyHint>}
           <ul className="space-y-1.5">
             {data.emerging.slice(0, 7).map((t) => (
@@ -234,10 +245,10 @@ export default function OverviewPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Card title="Local hour pattern — when do complaints happen? (color = sentiment)">
+        <Card title="Local hour pattern — when do complaints happen? (color = sentiment)" hint={HELP.hourly_pattern}>
           <HourlyChart data={data.hourly} />
         </Card>
-        <Card title="Evidence — highest-impact complaints">
+        <Card title="Evidence — highest-impact complaints" hint={HELP.evidence}>
           <div className="space-y-2.5">
             {data.evidence.length === 0 && <EmptyHint>No evidence yet</EmptyHint>}
             {data.evidence.map((m) => (
@@ -246,6 +257,9 @@ export default function OverviewPage() {
                   <SentimentPill sentiment={m.sentiment} />
                   <span className="text-slate-500">
                     {m.country ?? "?"} · {m.stage ?? "-"} · {m.source} · {m.published_at}
+                  </span>
+                  <span className="ml-auto">
+                    <SourceLink m={m} label="buka sumber" className="text-[10px]" />
                   </span>
                 </div>
                 <p className="line-clamp-2 text-slate-300">{m.content}</p>

@@ -17,6 +17,7 @@ import {
   PlayCircle,
   LineChart,
   HelpCircle,
+  BookOpen,
 } from "lucide-react";
 
 const items = [
@@ -34,6 +35,7 @@ const items = [
   { href: "/search", label: "Search & Ask", icon: Search },
   { href: "/reports", label: "Reports", icon: FileText },
   { href: "/costs", label: "LLM Costs", icon: Wallet },
+  { href: "/help", label: "Panduan", icon: BookOpen },
 ];
 
 export function Nav() {

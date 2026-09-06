@@ -87,6 +87,16 @@ function randomEmbedding(dim: number): number[] {
 async function main(): Promise<void> {
   await runMigrations();
 
+  await query(
+    `update items set url = case source
+       when 'reddit' then 'https://www.reddit.com/r/' || coalesce(metadata->>'subreddit', 'Forex') || '/search/?q=Deriv&sort=new'
+       when 'youtube' then 'https://www.youtube.com/results?search_query=Deriv+broker'
+       when 'gplay' then 'https://play.google.com/store/apps/details?id=com.deriv.app'
+       else 'https://news.google.com/search?q=Deriv+broker'
+     end
+     where source_id like 'seed-%' and (url is null or url like '%/comments/demo%')`,
+  );
+
   const existing = await query<{ c: string }>(`select count(*)::int as c from items`);
   if (Number(existing[0]?.c ?? 0) > 0) {
     console.log(`items table already has ${existing[0]?.c} rows, skipping seed`);
@@ -159,7 +169,14 @@ async function main(): Promise<void> {
     return {
       source,
       sourceId: `seed-${source}-${i}-${randInt(100000, 999999)}`,
-      url: source === "reddit" ? "https://reddit.com/r/Forex/comments/demo" : null,
+      url:
+        source === "reddit"
+          ? `https://www.reddit.com/r/${country === "ID" ? "indotrader" : country === "NG" ? "nigeriaforex" : "Forex"}/search/?q=Deriv&sort=new`
+          : source === "youtube"
+            ? "https://www.youtube.com/results?search_query=Deriv+broker"
+            : source === "gplay"
+              ? "https://play.google.com/store/apps/details?id=com.deriv.app"
+              : "https://news.google.com/search?q=Deriv+broker",
       title: null,
       content,
       author,

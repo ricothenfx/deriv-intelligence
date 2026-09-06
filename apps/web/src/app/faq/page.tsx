@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card, EmptyHint, Loading } from "@/components/ui";
+import { HELP } from "@/lib/help";
 import { getJson, postJson, type FaqRow, type TicketRow } from "@/lib/api";
 
 export default function FaqPage() {
@@ -60,7 +61,7 @@ export default function FaqPage() {
       {error && <div className="text-sm text-rose-300">Failed: {error}</div>}
       {loading && <Loading />}
 
-      <Card title={`FAQ (${faqs?.length ?? 0})`}>
+      <Card title={`FAQ (${faqs?.length ?? 0})`} hint={HELP.faq_generated}>
         {faqs && faqs.length === 0 && (
           <EmptyHint>No FAQ yet. Click “Regenerate FAQ” — it clusters real questions from collected mentions.</EmptyHint>
         )}
@@ -78,7 +79,7 @@ export default function FaqPage() {
         </div>
       </Card>
 
-      <Card title={`Escalation tickets (${tickets.length})`}>
+      <Card title={`Escalation tickets (${tickets.length})`} hint={HELP.tickets}>
         {tickets.length === 0 && <EmptyHint>No tickets. Use “Draft reply” on the Search page, then escalate.</EmptyHint>}
         <div className="space-y-2">
           {tickets.map((t) => (

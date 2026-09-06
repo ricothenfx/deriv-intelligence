@@ -68,7 +68,7 @@ export async function fetchYoutube(opts: FetchOptions): Promise<FetchResult> {
     }
   }
 
-  const stats = new Map<string, { viewCount?: number; likeCount?: number; commentCount?: number; description?: string; channelTitle?: string; publishedAt?: string }>();
+  const stats = new Map<string, { viewCount?: number; likeCount?: number; commentCount?: number; description?: string; channelTitle?: string; channelId?: string; publishedAt?: string }>();
   for (let i = 0; i < videoIds.length; i += 50) {
     const chunk = videoIds.slice(i, i + 50);
     if (quota.used + LIST_COST > budget) break;
@@ -81,6 +81,7 @@ export async function fetchYoutube(opts: FetchOptions): Promise<FetchResult> {
         commentCount: Number(v.statistics?.commentCount ?? 0),
         description: v.snippet?.description ?? "",
         channelTitle: v.snippet?.channelTitle ?? "",
+        channelId: v.snippet?.channelId ?? "",
         publishedAt: v.snippet?.publishedAt,
       });
     }
@@ -99,7 +100,7 @@ export async function fetchYoutube(opts: FetchOptions): Promise<FetchResult> {
       language: null,
       publishedAt: new Date(s.publishedAt ?? Date.now()),
       engagement: { viewCount: s.viewCount ?? 0, likeCount: s.likeCount ?? 0, comments: s.commentCount ?? 0 },
-      metadata: { kind: "video", videoId: id, query: videoQuery.get(id) ?? null },
+      metadata: { kind: "video", videoId: id, channelId: s.channelId ?? null, query: videoQuery.get(id) ?? null },
     });
   }
 
@@ -121,7 +122,7 @@ export async function fetchYoutube(opts: FetchOptions): Promise<FetchResult> {
         items.push({
           source: "youtube",
           sourceId: String(ct.id),
-          url: `https://www.youtube.com/watch?v=${id}`,
+          url: `https://www.youtube.com/watch?v=${id}&lc=${ct.id}`,
           title: null,
           content: String(c.textOriginal).slice(0, 5000),
           author: c.authorDisplayName ?? null,

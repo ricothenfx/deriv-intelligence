@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card, EmptyHint, Loading, Stat } from "@/components/ui";
 import { WorldMap } from "@/components/world-map";
+import { HELP } from "@/lib/help";
 import { getJson, type ReplayBucket } from "@/lib/api";
 
 interface ReplayResponse {
@@ -88,12 +89,13 @@ export default function ReplayPage() {
       {replay && replay.buckets.length > 0 && (
         <>
           <div className="grid gap-3 sm:grid-cols-3">
-            <Stat label="Bucket" value={frame.bucket.replace("T", " ") || "—"} />
-            <Stat label="Mentions in bucket" value={frame.total} />
+            <Stat label="Bucket" value={frame.bucket.replace("T", " ") || "—"} hint={HELP.map_country} />
+            <Stat label="Mentions in bucket" value={frame.total} hint={HELP.mentions} />
             <Stat
               label="Weighted sentiment"
               value={frame.sentiment.toFixed(2)}
               tone={frame.sentiment > 0.05 ? "text-emerald-400" : frame.sentiment < -0.05 ? "text-rose-400" : "text-slate-300"}
+              hint={HELP.weighted_sentiment}
             />
           </div>
 

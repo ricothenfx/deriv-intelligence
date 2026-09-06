@@ -135,6 +135,51 @@ async function main(): Promise<void> {
       console.log(`faq generated: ${out.created}`);
       break;
     }
+    case "fix-links": {
+      const { query } = await import("@deriv-intel/core");
+      const comments = await query<{ id: number }>(
+        `update items set url = url || '&lc=' || source_id
+         where source = 'youtube' and metadata->>'kind' = 'comment'
+           and source_id like 'Ug%' and url like 'https://www.youtube.com/watch%'
+           and url not like '%lc=%'
+         returning id`,
+      );
+      console.log(`youtube comment deep-links updated: ${comments.length}`);
+
+      const videos = await query<{ id: number; video_id: string }>(
+        `select id, metadata->>'videoId' as video_id from items
+         where source = 'youtube' and metadata->>'kind' = 'video'
+           and metadata->>'videoId' is not null and metadata->>'channelId' is null`,
+      );
+      console.log(`videos missing channelId: ${videos.length}`);
+      const key = process.env.YOUTUBE_API_KEY;
+      if (!videos.length) break;
+      if (!key) {
+        console.log("YOUTUBE_API_KEY not set, skipping channelId backfill");
+        break;
+      }
+      let fixed = 0;
+      for (let i = 0; i < videos.length; i += 50) {
+        const chunk = videos.slice(i, i + 50);
+        const ids = chunk.map((v) => v.video_id).join(",");
+        const res = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${ids}&key=${key}`);
+        if (!res.ok) {
+          console.log(`videos api failed: ${res.status}, stopping`);
+          break;
+        }
+        const json = (await res.json()) as { items?: { id: string; snippet?: { channelId?: string } }[] };
+        const byId = new Map((json.items ?? []).map((v) => [v.id, v.snippet?.channelId ?? null]));
+        for (const v of chunk) {
+          const channelId = byId.get(v.video_id);
+          if (!channelId) continue;
+          await query(`update items set metadata = metadata || jsonb_build_object('channelId', $2::text) where id = $1`, [v.id, channelId]);
+          fixed++;
+        }
+        await new Promise((r) => setTimeout(r, 300));
+      }
+      console.log(`channelId backfilled: ${fixed}`);
+      break;
+    }
     default:
       console.log(`usage:
   tsx src/cli.ts fetch <reddit|youtube|gplay|tavily>
@@ -142,7 +187,8 @@ async function main(): Promise<void> {
   tsx src/cli.ts report [--notify false]
   tsx src/cli.ts anomaly [--notify false]
   tsx src/cli.ts enrich-pending [--limit 2000]
-  tsx src/cli.ts faq [--max 12]`);
+  tsx src/cli.ts faq [--max 12]
+  tsx src/cli.ts fix-links`);
       process.exit(cmd ? 1 : 0);
   }
 }

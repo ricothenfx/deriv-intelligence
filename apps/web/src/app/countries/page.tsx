@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Card, EmptyHint, Loading, SentimentPill, toneClass } from "@/components/ui";
+import { Card, EmptyHint, InfoTip, Loading, SentimentPill, SourceLink, toneClass } from "@/components/ui";
 import { HourlyChart, TrendChart } from "@/components/charts";
 import { WorldMap } from "@/components/world-map";
+import { HELP } from "@/lib/help";
 import {
   getJson,
   type GroupStat,
@@ -59,7 +60,7 @@ export default function CountriesPage() {
         </p>
       </div>
 
-      <Card title="Sentiment by country — 30 days (click a country to drill down)">
+      <Card title="Sentiment by country — 30 days (click a country to drill down)" hint={HELP.map_country}>
         <WorldMap
           data={list.countries.map((c) => ({ country: c.key, mentions: c.mentions, sentiment: c.sentiment }))}
           onSelect={openCountry}
@@ -67,7 +68,7 @@ export default function CountriesPage() {
       </Card>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Card title="All countries">
+        <Card title="All countries" hint={HELP.sentiment_by_country}>
           <table className="w-full text-left text-xs">
             <thead className="text-slate-500">
               <tr>
@@ -135,12 +136,15 @@ export default function CountriesPage() {
               </div>
               <HourlyChart data={detail.hourly} />
               <div className="space-y-1.5">
-                <div className="text-xs font-medium text-slate-400">Latest mentions</div>
+                <div className="text-xs font-medium text-slate-400">Latest mentions <InfoTip text={HELP.latest_mentions} /></div>
                 {detail.mentions.slice(0, 5).map((m) => (
                   <div key={m.id} className="rounded border border-slate-800 bg-slate-900/80 p-2 text-xs">
                     <div className="mb-1 flex items-center gap-2">
                       <SentimentPill sentiment={m.sentiment} />
                       <span className="text-slate-500">{m.stage ?? "-"} · {m.source} · {m.published_at}</span>
+                      <span className="ml-auto">
+                        <SourceLink m={m} label="buka sumber" className="text-[10px]" />
+                      </span>
                     </div>
                     <p className="line-clamp-2 text-slate-300">{m.content}</p>
                   </div>

@@ -1,21 +1,64 @@
 import React from "react";
+import { HelpCircle, ExternalLink } from "lucide-react";
+import { mentionHref } from "@/lib/api";
+
+export function InfoTip({ text }: { text: string }) {
+  return (
+    <span className="group relative ml-1 inline-flex cursor-help align-middle">
+      <HelpCircle size={13} className="text-slate-500 transition-colors group-hover:text-slate-300" />
+      <span className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 hidden w-72 -translate-x-1/2 rounded-md border border-slate-700 bg-slate-950 p-2.5 text-left text-[11px] font-normal leading-relaxed text-slate-300 shadow-xl group-hover:block">
+        {text}
+      </span>
+    </span>
+  );
+}
+
+export function SourceLink({
+  m,
+  label,
+  className = "",
+}: {
+  m: { source: string; source_id?: string | null; url: string | null };
+  label?: string;
+  className?: string;
+}) {
+  const href = mentionHref(m);
+  if (!href) return null;
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      title="Buka postingan asli di tab baru"
+      className={`inline-flex items-center gap-1 text-sky-400 hover:text-sky-300 hover:underline ${className}`}
+    >
+      {label ?? "sumber"}
+      <ExternalLink size={11} className="shrink-0" />
+    </a>
+  );
+}
 
 export function Card({
   title,
   children,
   className = "",
   action,
+  hint,
 }: {
   title?: string;
   children: React.ReactNode;
   className?: string;
   action?: React.ReactNode;
+  hint?: string;
 }) {
   return (
     <div className={`rounded-lg border border-slate-800 bg-slate-900/60 p-4 ${className}`}>
       {(title || action) && (
         <div className="mb-3 flex items-center justify-between gap-2">
-          <h3 className="text-sm font-medium text-slate-300">{title}</h3>
+          <h3 className="text-sm font-medium text-slate-300">
+            {title}
+            {hint && <InfoTip text={hint} />}
+          </h3>
           {action}
         </div>
       )}
@@ -29,15 +72,20 @@ export function Stat({
   value,
   sub,
   tone = "text-white",
+  hint,
 }: {
   label: string;
   value: React.ReactNode;
   sub?: React.ReactNode;
   tone?: string;
+  hint?: string;
 }) {
   return (
     <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
-      <div className="text-[11px] uppercase tracking-wide text-slate-500">{label}</div>
+      <div className="flex items-center text-[11px] uppercase tracking-wide text-slate-500">
+        {label}
+        {hint && <InfoTip text={hint} />}
+      </div>
       <div className={`mt-1 text-2xl font-semibold ${tone}`}>{value}</div>
       {sub && <div className="mt-1 text-xs text-slate-500">{sub}</div>}
     </div>

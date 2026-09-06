@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, EmptyHint, Loading, SeverityBadge, toneClass } from "@/components/ui";
+import { Card, EmptyHint, InfoTip, Loading, SeverityBadge, toneClass } from "@/components/ui";
+import { HELP } from "@/lib/help";
 import { getJson, type AlertRow } from "@/lib/api";
 
 export default function AlertsPage() {
@@ -64,11 +65,16 @@ export default function AlertsPage() {
               <span>
                 observed <span className="font-semibold text-slate-100">{a.observed.toFixed(2)}</span> vs baseline{" "}
                 {a.baseline.toFixed(2)}
+                <InfoTip text={HELP.alerts_baseline} />
               </span>
               <span>
                 z <span className={toneClass(-Math.abs(a.z_score))}>{a.z_score.toFixed(2)}</span>
+                <InfoTip text={HELP.alerts_zscore} />
               </span>
-              <span>confidence {(a.confidence * 100).toFixed(0)}%</span>
+              <span>
+                confidence {(a.confidence * 100).toFixed(0)}%
+                <InfoTip text={HELP.alerts_confidence} />
+              </span>
             </div>
 
             {expanded === a.id && (
@@ -80,7 +86,9 @@ export default function AlertsPage() {
                   </p>
                 )}
                 <div>
-                  <div className="mb-2 text-xs font-medium text-slate-400">Incident timeline</div>
+                  <div className="mb-2 flex items-center text-xs font-medium text-slate-400">
+                    Incident timeline <InfoTip text={HELP.alerts_timeline} />
+                  </div>
                   <ol className="relative space-y-3 border-l border-slate-800 pl-4">
                     {a.timeline.map((t, i) => (
                       <li key={i} className="relative">

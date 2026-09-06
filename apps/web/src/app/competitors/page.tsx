@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { BarRow, Card, EmptyHint, Loading, toneClass } from "@/components/ui";
+import { HELP } from "@/lib/help";
 import { getJson, type BrandAspectRow, type BrandStat, type GroupStat, type SwitcherRow } from "@/lib/api";
 
 export default function CompetitorsPage() {
@@ -68,7 +69,7 @@ export default function CompetitorsPage() {
 
       {brands && (
         <div className="grid gap-4 md:grid-cols-2">
-          <Card title="Share of voice (mentions)">
+          <Card title="Share of voice (mentions)" hint={HELP.share_of_voice}>
             {brands.length === 0 ? (
               <EmptyHint>No competitor data yet — run a fetch/backfill first.</EmptyHint>
             ) : (
@@ -85,7 +86,7 @@ export default function CompetitorsPage() {
             )}
           </Card>
 
-          <Card title="Weighted sentiment by brand">
+          <Card title="Weighted sentiment by brand" hint={HELP.brand_sentiment}>
             {brands.length === 0 ? (
               <EmptyHint>No data.</EmptyHint>
             ) : (
@@ -117,7 +118,7 @@ export default function CompetitorsPage() {
       )}
 
       {aspects.length > 0 && (
-        <Card title="Aspect sentiment: Deriv vs competitors">
+        <Card title="Aspect sentiment: Deriv vs competitors" hint={HELP.aspect_matrix}>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[560px] text-xs">
               <thead>
@@ -148,7 +149,7 @@ export default function CompetitorsPage() {
         </Card>
       )}
 
-      <Card title="Switchers — users moving between brands (last 90 days)">
+      <Card title="Switchers — users moving between brands (last 90 days)" hint={HELP.switchers}>
         {switchers.length === 0 ? (
           <EmptyHint>No switcher posts detected yet. Grows as more multi-brand posts are collected.</EmptyHint>
         ) : (

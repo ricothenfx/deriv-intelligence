@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card, EmptyHint, Loading, Stat } from "@/components/ui";
+import { HELP } from "@/lib/help";
 import { getJson } from "@/lib/api";
 
 interface CostResponse {
@@ -36,17 +37,18 @@ export default function CostsPage() {
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat label="Total (14 days)" value={`$${data.total.toFixed(4)}`} />
-        <Stat label="Projected / month" value={`$${monthly.toFixed(2)}`} tone="text-amber-400" />
-        <Stat label="Requests (14 days)" value={data.daily.reduce((s, d) => s + d.calls, 0).toLocaleString()} />
+        <Stat label="Total (14 days)" value={`$${data.total.toFixed(4)}`} hint={HELP.llm_costs} />
+        <Stat label="Projected / month" value={`$${monthly.toFixed(2)}`} tone="text-amber-400" hint={HELP.llm_costs} />
+        <Stat label="Requests (14 days)" value={data.daily.reduce((s, d) => s + d.calls, 0).toLocaleString()} hint={HELP.llm_costs} />
         <Stat
           label="Tokens in / out"
           value={`${(data.daily.reduce((s, d) => s + d.input_tokens, 0) / 1e6).toFixed(1)}M / ${(data.daily.reduce((s, d) => s + d.output_tokens, 0) / 1e6).toFixed(1)}M`}
+          hint={HELP.llm_costs}
         />
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Card title="Daily cost (14 days)">
+        <Card title="Daily cost (14 days)" hint={HELP.llm_costs}>
           {data.daily.length === 0 && <EmptyHint>No LLM usage yet</EmptyHint>}
           {data.daily.map((d) => (
             <div key={d.day} className="flex items-center gap-3 py-1">

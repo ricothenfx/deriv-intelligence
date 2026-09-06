@@ -16,12 +16,18 @@ importers:
       '@deriv-intel/llm':
         specifier: workspace:*
         version: link:../../packages/llm
+      bullmq:
+        specifier: ^5.34.0
+        version: 5.81.4
       d3-geo:
         specifier: ^3.1.1
         version: 3.1.1
       dotenv:
         specifier: ^16.4.5
         version: 16.6.1
+      ioredis:
+        specifier: ^5.4.1
+        version: 5.11.1
       lucide-react:
         specifier: ^0.454.0
         version: 0.454.0(react@18.3.1)

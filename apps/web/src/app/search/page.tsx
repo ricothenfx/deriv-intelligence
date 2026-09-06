@@ -1,7 +1,8 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { Card, EmptyHint, Loading, SentimentPill, toneClass } from "@/components/ui";
+import { Card, EmptyHint, InfoTip, Loading, SentimentPill, SourceLink, toneClass } from "@/components/ui";
+import { HELP } from "@/lib/help";
 import { getJson, postJson, type ChatLogEntry, type CopilotDraft, type GroupStat, type MentionRow } from "@/lib/api";
 
 interface ChatMsg {
@@ -175,15 +176,14 @@ function MentionCard({ m }: { m: MentionRow }) {
         {m.topics.slice(0, 3).map((t) => (
           <span key={t} className="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-sky-300">{t}</span>
         ))}
-        <span className="ml-auto text-[10px] text-slate-600">score {(m.score ?? 0).toFixed(3)}</span>
+        <span className="ml-auto inline-flex items-center text-[10px] text-slate-600">
+          score {(m.score ?? 0).toFixed(3)}
+          <InfoTip text={HELP.search_score} />
+        </span>
       </div>
       <p className="line-clamp-3 text-slate-300">{m.content}</p>
       <div className="mt-1.5 flex flex-wrap items-center gap-3">
-        {m.url && (
-          <a href={m.url} target="_blank" rel="noreferrer" className="text-[11px] text-sky-400 hover:underline">
-            open source →
-          </a>
-        )}
+        <SourceLink m={m} label="buka sumber" className="text-[11px]" />
         <button onClick={draftReply} disabled={drafting || !!draft} className="text-[11px] text-sky-400 hover:underline disabled:opacity-50">
           {drafting ? "drafting…" : draft ? "draft ✓" : "✍ Draft reply"}
         </button>

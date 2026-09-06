@@ -39,6 +39,7 @@ export interface AspectRow {
 export interface MentionRow {
   id: number;
   source: string;
+  source_id: string;
   url: string | null;
   title: string | null;
   content: string;
@@ -117,6 +118,8 @@ export interface SwitcherRow {
 export interface KolRow {
   author: string;
   source: string;
+  profile_url: string | null;
+  example_url: string | null;
   mentions: number;
   total_engagement: number;
   avg_sentiment: number;
@@ -206,13 +209,50 @@ export async function postJson<T>(url: string, body: unknown): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+export interface SourceStatus {
+  source: string;
+  label: string;
+  schedule: string;
+  last_grab: string | null;
+  last_item_at: string | null;
+  items: number;
+  new_items: number;
+  quota_used: number | null;
+  quota_budget: number | null;
+  pending_enrichment: number;
+}
+
+export interface SourcesResponse {
+  sources: SourceStatus[];
+  worker: { running: boolean };
+}
+
+export interface FetchJobStatus {
+  jobId: string;
+  source: string;
+  state: string;
+  fetched: number | null;
+  inserted: number | null;
+  error: string | null;
+}
+
 export const fmtSigned = (n: number) => `${n >= 0 ? "+" : ""}${n.toFixed(2)}`;
 
 export const fmtDelta = (n: number | null) =>
   n == null ? "—" : `${n >= 0 ? "+" : ""}${(n * 100).toFixed(0)}%`;
 
-export function mentionHref(m: MentionRow): string | null {
-  if (m.url) return m.url;
-  if (m.source === "reddit") return `https://reddit.com/comments/${m.id}`;
+export function mentionHref(m: { source: string; url: string | null; source_id?: string | null }): string | null {
+  if (m.url) {
+    if (m.source === "youtube" && m.source_id && m.source_id.startsWith("Ug") && !m.url.includes("lc=")) {
+      return `${m.url}${m.url.includes("?") ? "&" : "?"}lc=${m.source_id}`;
+    }
+    return m.url;
+  }
+  if (m.source === "reddit" && m.source_id && /^(t1|t3)_/.test(m.source_id)) {
+    return `https://www.reddit.com/by_id/${m.source_id}`;
+  }
+  if (m.source === "gplay") {
+    return `https://play.google.com/store/apps/details?id=${process.env.NEXT_PUBLIC_GPLAY_APP_ID ?? "com.deriv.app"}`;
+  }
   return null;
 }

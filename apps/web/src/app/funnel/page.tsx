@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, EmptyHint, Loading, SentimentPill, toneClass } from "@/components/ui";
+import { Card, EmptyHint, Loading, SentimentPill, SourceLink, toneClass } from "@/components/ui";
+import { HELP } from "@/lib/help";
 import { getJson, type AspectRow, type FunnelRow, type GroupStat, type MentionRow } from "@/lib/api";
 
 interface FunnelResponse {
@@ -69,7 +70,7 @@ export default function FunnelPage() {
 
       {data && (
         <>
-          <Card title="Sentiment funnel (7 days)">
+          <Card title="Sentiment funnel (7 days)" hint={HELP.journey_funnel}>
             <div className="space-y-3">
               {data.funnel.map((f) => {
                 const max = Math.max(...data.funnel.map((x) => x.mentions), 1);
@@ -110,7 +111,7 @@ export default function FunnelPage() {
           </Card>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <Card title="Complaints by aspect × stage">
+            <Card title="Complaints by aspect × stage" hint={HELP.funnel_aspect}>
               <table className="w-full text-left text-xs">
                 <thead className="text-slate-500">
                   <tr>
@@ -132,7 +133,7 @@ export default function FunnelPage() {
               {data.aspects.length === 0 && <EmptyHint>No aspect data yet</EmptyHint>}
             </Card>
 
-            <Card title="Complaint evidence by stage">
+            <Card title="Complaint evidence by stage" hint={HELP.evidence}>
               <div className="space-y-2">
                 {data.evidence.length === 0 && <EmptyHint>No evidence yet</EmptyHint>}
                 {data.evidence.slice(0, 8).map((m) => (
@@ -142,6 +143,9 @@ export default function FunnelPage() {
                       <span className="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-sky-300">{m.stage ?? "-"}</span>
                       <span className="text-slate-500">
                         {m.country ?? "?"} · {m.source} · {m.published_at}
+                      </span>
+                      <span className="ml-auto">
+                        <SourceLink m={m} label="buka sumber" className="text-[10px]" />
                       </span>
                     </div>
                     <p className="line-clamp-2 text-slate-300">{m.content}</p>

@@ -6,7 +6,7 @@ config({ path: "../../.env" });
 const nextConfig = {
   transpilePackages: ["@deriv-intel/core", "@deriv-intel/llm", "@deriv-intel/connectors"],
   experimental: {
-    serverComponentsExternalPackages: ["pg", "pdfkit"],
+    serverComponentsExternalPackages: ["pg", "pdfkit", "bullmq", "ioredis"],
   },
 };
 

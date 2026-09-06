@@ -296,6 +296,7 @@ export async function topNegativeAspects(days = 7, f: Filters = {}, limit = 15):
 export interface MentionRow {
   id: number;
   source: string;
+  source_id: string;
   url: string | null;
   title: string | null;
   content: string;
@@ -315,7 +316,7 @@ export async function topMentions(
   const limit = opts.limit ?? 20;
   const { where, params } = buildWhere({ ...f, sentiment: opts.sentiment ?? f.sentiment ?? null });
   const rows = await query<Record<string, string>>(
-    `select i.id, i.source, i.url, i.title, left(i.content, 400) as content, e.sentiment,
+    `select i.id, i.source, i.source_id, i.url, i.title, left(i.content, 400) as content, e.sentiment,
        e.sentiment_score, e.topics, e.location_country, e.journey_stage,
        to_char(i.published_at, 'YYYY-MM-DD HH24:MI') as published_at,
        (${ENG_WEIGHT})::int as engagement
@@ -328,6 +329,7 @@ export async function topMentions(
   return rows.map((r) => ({
     id: Number(r.id),
     source: r.source,
+    source_id: r.source_id,
     url: r.url,
     title: r.title,
     content: r.content,

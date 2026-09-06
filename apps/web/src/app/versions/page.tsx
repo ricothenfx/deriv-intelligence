@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, EmptyHint, Loading, toneClass } from "@/components/ui";
+import { Card, EmptyHint, InfoTip, Loading, toneClass } from "@/components/ui";
+import { HELP } from "@/lib/help";
 import { getJson, type VersionRow } from "@/lib/api";
 
 export default function VersionsPage() {
@@ -54,17 +55,23 @@ export default function VersionsPage() {
               </div>
               <div className="text-right">
                 <div className={`text-lg font-semibold ${v.avg_rating < 3 ? "text-rose-400" : v.avg_rating >= 4 ? "text-emerald-400" : "text-slate-300"}`}>
-                  {v.avg_rating.toFixed(1)}★
+                  <span className="inline-flex items-center">
+                    {v.avg_rating.toFixed(1)}★
+                    <InfoTip text={HELP.version_rating} />
+                  </span>
                 </div>
                 <div className="text-[10px] text-slate-500">{v.mentions} reviews</div>
               </div>
             </div>
             <div className="flex items-center gap-3 text-xs">
-              <span className={toneClass(v.sentiment)}>sentiment {v.sentiment.toFixed(2)}</span>
+              <span className={`inline-flex items-center ${toneClass(v.sentiment)}`}>
+                sentiment {v.sentiment.toFixed(2)}
+                <InfoTip text={HELP.version_sentiment} />
+              </span>
               <span className="text-rose-400/80">{v.negative} neg</span>
             </div>
             {(v.top_aspects.length > 0 || v.top_topics.length > 0) && (
-              <div className="mt-2 flex flex-wrap gap-1.5">
+              <div className="mt-2 flex flex-wrap gap-1.5" title={HELP.version_aspects}>
                 {v.top_aspects.map((a, i) => (
                   <span
                     key={i}

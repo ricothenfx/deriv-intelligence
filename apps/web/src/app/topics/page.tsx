@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, EmptyHint, Loading, SentimentPill, toneClass } from "@/components/ui";
+import { Card, EmptyHint, Loading, SentimentPill, SourceLink, toneClass } from "@/components/ui";
 import { TrendChart } from "@/components/charts";
+import { HELP } from "@/lib/help";
 import {
   fmtDelta,
   getJson,
@@ -71,7 +72,7 @@ export default function TopicsPage() {
 
       {data && (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <Card title="Topics (7 days)" className="lg:col-span-2">
+          <Card title="Topics (7 days)" className="lg:col-span-2" hint={HELP.topics_table}>
             <table className="w-full text-left text-xs">
               <thead className="text-slate-500">
                 <tr>
@@ -103,7 +104,7 @@ export default function TopicsPage() {
             {data.topics.length === 0 && <EmptyHint>No topics yet</EmptyHint>}
           </Card>
 
-          <Card title="Emerging (7d vs prev 7d)">
+          <Card title="Emerging (7d vs prev 7d)" hint={HELP.emerging_topics}>
             <ul className="space-y-2">
               {data.emerging.length === 0 && <EmptyHint>No rising trends yet</EmptyHint>}
               {data.emerging.map((t) => (
@@ -127,13 +128,16 @@ export default function TopicsPage() {
               <Card title={`Topic trend: ${topic}`} className="lg:col-span-2">
                 <TrendChart data={data.series} />
               </Card>
-              <Card title={`Mentions: ${topic}`}>
+              <Card title={`Mentions: ${topic}`} hint={HELP.evidence}>
                 <div className="space-y-2">
                   {(data.mentions ?? []).slice(0, 6).map((m) => (
                     <div key={m.id} className="rounded border border-slate-800 bg-slate-900/80 p-2 text-xs">
                       <div className="mb-1 flex items-center gap-2">
                         <SentimentPill sentiment={m.sentiment} />
-                        <span className="text-slate-500">{m.country ?? "?"} · {m.published_at}</span>
+                        <span className="text-slate-500">{m.country ?? "?"} · {m.source ?? "-"} · {m.published_at}</span>
+                        <span className="ml-auto">
+                          <SourceLink m={m} label="buka sumber" className="text-[10px]" />
+                        </span>
                       </div>
                       <p className="line-clamp-2 text-slate-300">{m.content}</p>
                     </div>

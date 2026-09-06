@@ -8,6 +8,7 @@ function mapRow(r: Record<string, string>): SearchRow {
   return {
     id: Number(r.id),
     source: r.source,
+    source_id: r.source_id,
     url: r.url,
     title: r.title,
     content: r.content,
@@ -22,7 +23,7 @@ function mapRow(r: Record<string, string>): SearchRow {
   };
 }
 
-const SELECT = `select i.id, i.source, i.url, i.title, left(i.content, 400) as content,
+const SELECT = `select i.id, i.source, i.source_id, i.url, i.title, left(i.content, 400) as content,
   e.sentiment, e.sentiment_score, e.topics, e.location_country, e.journey_stage,
   to_char(i.published_at, 'YYYY-MM-DD HH24:MI') as published_at,
   (${ENG_WEIGHT})::int as engagement`;

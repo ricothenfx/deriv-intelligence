@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, EmptyHint, Loading, toneClass } from "@/components/ui";
+import { Card, EmptyHint, InfoTip, Loading, toneClass } from "@/components/ui";
 import { TrendChart } from "@/components/charts";
+import { HELP } from "@/lib/help";
 import { getJson, type Correlation, type DailyMetric } from "@/lib/api";
 
 interface InsightsResponse {
@@ -51,7 +52,7 @@ export default function InsightsPage() {
         <>
           <div className="grid gap-3 md:grid-cols-3">
             {data.correlations.map((c) => (
-              <Card key={c.name} title={c.name}>
+              <Card key={c.name} title={c.name} hint={HELP.correlation_r}>
                 <div className={`text-3xl font-semibold ${c.r == null ? "text-slate-600" : c.r < -0.4 ? "text-rose-400" : c.r > 0.4 ? "text-emerald-400" : "text-slate-300"}`}>
                   {c.r == null ? "n/a" : c.r.toFixed(2)}
                 </div>
